@@ -1,21 +1,159 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { Button } from "@/components/ui/Button"
+import { ArrowRight, Zap, Brain, Globe, Clock, Palette, BarChart3, CheckCircle, Star, Users, TrendingUp, Award, Sparkles, Rocket, Target } from "lucide-react"
+import { initScrollAnimations, initParallaxEffect, initSmoothScroll, initTypingAnimation, initCounterAnimation, initFloatingParticles } from '@/lib/animations.js';
+import { SectionSkeleton } from '@/components/sections';
+
+// Lazy load components for better performance
+import dynamic from 'next/dynamic';
+
+const HeroSection = dynamic(() => import('@/components/sections/HeroSection'), {
+  loading: () => <SectionSkeleton />,
+  ssr: true
+});
+
+const FeaturesSection = dynamic(() => import('@/components/sections/FeaturesSection'), {
+  loading: () => <SectionSkeleton />,
+  ssr: false
+});
+
+const HowItWorksSection = dynamic(() => import('@/components/sections/HowItWorksSection'), {
+  loading: () => <SectionSkeleton />,
+  ssr: false
+});
+
+const CTASection = dynamic(() => import('@/components/sections/CTASection'), {
+  loading: () => <SectionSkeleton />,
+  ssr: false
+});
+
+const AgentModeSection = dynamic(() => import('@/components/sections/AgentModeSection'), {
+  loading: () => <SectionSkeleton />,
+  ssr: false
+});
+
+const MultilingualSection = dynamic(() => import('@/components/sections/MultilingualSection'), {
+  loading: () => <SectionSkeleton />,
+  ssr: false
+});
 
 export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [visibleElements, setVisibleElements] = useState<Set<string>>(new Set());
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
+    
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    // Intersection Observer for animations
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisibleElements(prev => new Set([...prev, entry.target.id]));
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    // Observe elements with a delay to ensure they're rendered
+    const observeElements = () => {
+      const elementsToObserve = document.querySelectorAll('[data-animate]');
+      elementsToObserve.forEach(el => observer.observe(el));
+    };
+
+    // Delay observation to ensure components are mounted
+    const timeoutId = setTimeout(observeElements, 100);
+
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('mousemove', handleMouseMove);
+    
+    if (isClient) {
+      initScrollAnimations();
+      initParallaxEffect();
+      initSmoothScroll();
+      initTypingAnimation();
+      initCounterAnimation();
+      initFloatingParticles();
+    }
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('mousemove', handleMouseMove);
+      observer.disconnect();
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-x-hidden">
+    <div className="min-h-screen bg-black text-white overflow-x-hidden relative">
+      {/* Floating Particles Background */}
+      <canvas id="particles-canvas" className="absolute inset-0 pointer-events-none opacity-30"></canvas>
+      
+      {/* Animation Scripts */}
+
+      
+      {/* Enhanced Animated Background */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-electric-blue/5 via-transparent to-neon-purple/5"></div>
+        {/* Animated Grid Pattern */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `
+              linear-gradient(rgba(0, 191, 255, 0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(0, 191, 255, 0.1) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px',
+            animation: 'gridMove 20s linear infinite'
+          }}></div>
+        </div>
+        {/* Floating Orbs */}
+        {isClient && (
+          <>
+            <div 
+              className="absolute w-96 h-96 bg-electric-blue/10 rounded-full blur-3xl animate-pulse"
+              style={{
+                left: `${mousePosition.x * 0.02}px`,
+                top: `${mousePosition.y * 0.02}px`,
+                transform: 'translate(-50%, -50%)',
+                animation: 'float 6s ease-in-out infinite'
+              }}
+            ></div>
+            <div 
+              className="absolute w-64 h-64 bg-neon-purple/10 rounded-full blur-3xl animate-pulse delay-1000"
+              style={{
+                right: `${(typeof window !== 'undefined' ? window.innerWidth : 1920) - mousePosition.x} * 0.01}px`,
+                bottom: `${(typeof window !== 'undefined' ? window.innerHeight : 1080) - mousePosition.y} * 0.01}px`,
+                transform: 'translate(50%, 50%)',
+                animation: 'float 8s ease-in-out infinite reverse'
+              }}
+            ></div>
+            <div 
+              className="absolute w-32 h-32 bg-lime-green/15 rounded-full blur-2xl animate-pulse"
+              style={{
+                left: `${mousePosition.x * 0.015}px`,
+                bottom: `${mousePosition.y * 0.01}px`,
+                transform: 'translate(-50%, 50%)',
+                animation: 'float 10s ease-in-out infinite'
+              }}
+            ></div>
+          </>
+        )}
+      </div>
+      
       {/* Navigation */}
       <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
         isScrolled ? 'bg-black/80 backdrop-blur-md border-b border-gray-800' : 'bg-transparent'
@@ -53,181 +191,34 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 bg-gradient-to-br from-electric-blue/10 via-transparent to-neon-purple/10"></div>
-        <div className="relative z-10 text-center max-w-4xl mx-auto">
-          <div className="fade-in">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-              From Idea to
-              <span className="gradient-text block">Perfect Prompt</span>
-              <span className="text-lime-green">Instantly</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
-              AI-powered multilingual SaaS for professional prompt generation with advanced reasoning capabilities.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link
-                href="/dashboard"
-                className="bg-electric-blue hover:bg-electric-blue/80 text-black px-8 py-4 rounded-full font-semibold text-lg transition-all duration-200 hover:glow hover:scale-105"
-              >
-                Start Creating Prompts
-              </Link>
-              <Link
-                href="#how-it-works"
-                className="border border-gray-600 hover:border-electric-blue text-white px-8 py-4 rounded-full font-semibold text-lg transition-all duration-200 hover:bg-electric-blue/10"
-              >
-                See How It Works
-              </Link>
-            </div>
-          </div>
-        </div>
-        
-        {/* Floating Elements */}
-        <div className="absolute top-20 left-10 w-20 h-20 bg-electric-blue/20 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-32 h-32 bg-neon-purple/20 rounded-full blur-xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-lime-green/20 rounded-full blur-xl animate-pulse delay-500"></div>
-      </section>
+      <Suspense fallback={<SectionSkeleton />}>
+        <HeroSection mousePosition={mousePosition} />
+      </Suspense>
 
       {/* Features Section */}
-      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
-              Powerful Features
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Everything you need to create perfect prompts for any AI model
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="bg-gray-900/50 p-8 rounded-2xl border border-gray-800 hover:border-electric-blue/50 transition-all duration-300 hover:glow-subtle">
-              <div className="w-12 h-12 bg-electric-blue/20 rounded-lg flex items-center justify-center mb-6">
-                <span className="text-electric-blue text-2xl">🎯</span>
-              </div>
-              <h3 className="text-2xl font-bold mb-4">Smart Prompt Generation</h3>
-              <p className="text-gray-300">
-                AI-powered prompt creation that understands context and generates optimized prompts for any use case.
-              </p>
-            </div>
-            
-            <div className="bg-gray-900/50 p-8 rounded-2xl border border-gray-800 hover:border-neon-purple/50 transition-all duration-300 hover:glow-subtle">
-              <div className="w-12 h-12 bg-neon-purple/20 rounded-lg flex items-center justify-center mb-6">
-                <span className="text-neon-purple text-2xl">🤖</span>
-              </div>
-              <h3 className="text-2xl font-bold mb-4">Agentic AI Mode</h3>
-              <p className="text-gray-300">
-                Advanced reasoning capabilities with multi-step thinking and autonomous problem-solving.
-              </p>
-            </div>
-            
-            <div className="bg-gray-900/50 p-8 rounded-2xl border border-gray-800 hover:border-lime-green/50 transition-all duration-300 hover:glow-subtle">
-              <div className="w-12 h-12 bg-lime-green/20 rounded-lg flex items-center justify-center mb-6">
-                <span className="text-lime-green text-2xl">🌍</span>
-              </div>
-              <h3 className="text-2xl font-bold mb-4">Multilingual Support</h3>
-              <p className="text-gray-300">
-                Generate prompts in English, Spanish, and French with native-level fluency and cultural context.
-              </p>
-            </div>
-            
-            <div className="bg-gray-900/50 p-8 rounded-2xl border border-gray-800 hover:border-electric-blue/50 transition-all duration-300 hover:glow-subtle">
-              <div className="w-12 h-12 bg-electric-blue/20 rounded-lg flex items-center justify-center mb-6">
-                <span className="text-electric-blue text-2xl">⚡</span>
-              </div>
-              <h3 className="text-2xl font-bold mb-4">Lightning Fast</h3>
-              <p className="text-gray-300">
-                Get professional-quality prompts in seconds with our optimized AI models and infrastructure.
-              </p>
-            </div>
-            
-            <div className="bg-gray-900/50 p-8 rounded-2xl border border-gray-800 hover:border-neon-purple/50 transition-all duration-300 hover:glow-subtle">
-              <div className="w-12 h-12 bg-neon-purple/20 rounded-lg flex items-center justify-center mb-6">
-                <span className="text-neon-purple text-2xl">🎨</span>
-              </div>
-              <h3 className="text-2xl font-bold mb-4">Customizable Tones</h3>
-              <p className="text-gray-300">
-                Choose from professional, friendly, creative, or technical tones to match your brand voice.
-              </p>
-            </div>
-            
-            <div className="bg-gray-900/50 p-8 rounded-2xl border border-gray-800 hover:border-lime-green/50 transition-all duration-300 hover:glow-subtle">
-              <div className="w-12 h-12 bg-lime-green/20 rounded-lg flex items-center justify-center mb-6">
-                <span className="text-lime-green text-2xl">💾</span>
-              </div>
-              <h3 className="text-2xl font-bold mb-4">History & Analytics</h3>
-              <p className="text-gray-300">
-                Track your prompt performance and access your complete generation history with detailed analytics.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <Suspense fallback={<SectionSkeleton />}>
+        <FeaturesSection visibleElements={visibleElements} />
+      </Suspense>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-900/30">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
-              How It Works
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Three simple steps to generate perfect prompts
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-20 h-20 bg-electric-blue/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-electric-blue">
-                <span className="text-electric-blue text-3xl font-bold">1</span>
-              </div>
-              <h3 className="text-2xl font-bold mb-4">Describe Your Idea</h3>
-              <p className="text-gray-300">
-                Simply tell us what you want to achieve. Our AI understands context and intent.
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-20 h-20 bg-neon-purple/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-neon-purple">
-                <span className="text-neon-purple text-3xl font-bold">2</span>
-              </div>
-              <h3 className="text-2xl font-bold mb-4">Customize Settings</h3>
-              <p className="text-gray-300">
-                Choose your AI model, tone, role, and enable Agentic AI for advanced reasoning.
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-20 h-20 bg-lime-green/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-lime-green">
-                <span className="text-lime-green text-3xl font-bold">3</span>
-              </div>
-              <h3 className="text-2xl font-bold mb-4">Get Perfect Prompts</h3>
-              <p className="text-gray-300">
-                Receive optimized, professional prompts ready to use with any AI model.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <Suspense fallback={<SectionSkeleton />}>
+        <HowItWorksSection visibleElements={visibleElements} />
+      </Suspense>
+
+      {/* Agent Mode Section */}
+      <Suspense fallback={<SectionSkeleton />}>
+        <AgentModeSection visibleElements={visibleElements} />
+      </Suspense>
+
+      {/* Multilingual Section */}
+      <Suspense fallback={<SectionSkeleton />}>
+        <MultilingualSection visibleElements={visibleElements} />
+      </Suspense>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Ready to Create
-            <span className="gradient-text block">Amazing Prompts?</span>
-          </h2>
-          <p className="text-xl text-gray-300 mb-8">
-            Join thousands of professionals who trust Promptly for their AI prompt needs.
-          </p>
-          <Link
-            href="/dashboard"
-            className="bg-electric-blue hover:bg-electric-blue/80 text-black px-8 py-4 rounded-full font-semibold text-lg transition-all duration-200 hover:glow hover:scale-105 inline-block"
-          >
-            Start Free Today
-          </Link>
-        </div>
-      </section>
+      <Suspense fallback={<SectionSkeleton />}>
+        <CTASection visibleElements={visibleElements} />
+      </Suspense>
 
       {/* Footer */}
       <footer className="border-t border-gray-800 py-12 px-4 sm:px-6 lg:px-8">
@@ -259,7 +250,7 @@ export default function Home() {
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 Promptly. All rights reserved.</p>
+            <p>&copy; 2025 Promptly. All rights reserved.</p>
           </div>
         </div>
       </footer>

@@ -11,9 +11,9 @@ const config: Config = {
     extend: {
       colors: {
         // Promptly Brand Colors
-        'electric-blue': '#00BFFF',
-        'neon-purple': '#9B5DE5',
-        'lime-green': '#B9FF66',
+        'electric-blue': 'var(--color-electric-blue)',
+        'neon-purple': 'var(--color-neon-purple)',
+        'lime-green': 'var(--color-lime-green)',
         
         // Dark Theme Colors
         background: 'var(--background)',
@@ -58,6 +58,9 @@ const config: Config = {
         'slide-up': 'slideUp 0.5s ease-out',
         'slide-down': 'slideDown 0.5s ease-out',
         'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+        'float': 'float 3s ease-in-out infinite',
+        'glow-pulse': 'glowPulse 2s ease-in-out infinite',
+        'gradient-shift': 'gradientShift 4s ease infinite',
       },
       keyframes: {
         fadeIn: {
@@ -75,6 +78,23 @@ const config: Config = {
         pulseGlow: {
           '0%, 100%': { boxShadow: '0 0 20px rgba(0, 191, 255, 0.3)' },
           '50%': { boxShadow: '0 0 40px rgba(0, 191, 255, 0.6)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        glowPulse: {
+          '0%, 100%': { 
+            boxShadow: '0 0 20px rgba(0, 191, 255, 0.3), 0 0 40px rgba(155, 93, 229, 0.2)' 
+          },
+          '50%': { 
+            boxShadow: '0 0 40px rgba(0, 191, 255, 0.6), 0 0 80px rgba(155, 93, 229, 0.4)' 
+          },
+        },
+        gradientShift: {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' },
         },
       },
       backgroundImage: {

@@ -93,8 +93,8 @@ export default function Pricing() {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            Simple, Transparent
-            <span className="gradient-text block">Pricing</span>
+            Simple Pricing —
+            <span className="gradient-text block">Free Now, Paid Plans Soon</span>
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
             Start free and scale as you grow. No hidden fees, no surprises.
@@ -125,68 +125,100 @@ export default function Pricing() {
           </div>
         </div>
 
-        {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
-          {plans.map((plan, index) => (
-            <div
-              key={plan.name}
-              className={`relative bg-gray-900/50 rounded-2xl border p-8 transition-all duration-300 hover:scale-105 ${
-                plan.popular
-                  ? 'border-electric-blue shadow-lg shadow-electric-blue/20'
-                  : 'border-gray-800 hover:border-gray-700'
-              }`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-electric-blue text-black px-4 py-2 rounded-full text-sm font-semibold">
-                    Most Popular
-                  </span>
-                </div>
-              )}
-              
-              <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                <p className="text-gray-400 mb-4">{plan.description}</p>
-                <div className="mb-4">
-                  {typeof plan.price === 'number' ? (
-                    <div>
-                      <span className="text-4xl font-bold">${plan.price}</span>
-                      {plan.originalPrice && (
-                        <span className="text-xl text-gray-400 line-through ml-2">
-                          ${plan.originalPrice}
-                        </span>
-                      )}
-                      <span className="text-gray-400">/{isAnnual ? 'year' : 'month'}</span>
-                    </div>
-                  ) : (
-                    <span className="text-4xl font-bold">{plan.price}</span>
-                  )}
-                </div>
-              </div>
-              
-              <ul className="space-y-4 mb-8">
-                {plan.features.map((feature, featureIndex) => (
-                  <li key={featureIndex} className="flex items-start space-x-3">
-                    <span className="text-electric-blue mt-1 flex-shrink-0">✓</span>
-                    <span className="text-gray-300">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              
-              <button
-                className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-200 ${
-                  plan.available
-                    ? plan.popular
-                      ? 'bg-electric-blue hover:bg-electric-blue/80 text-black hover:glow'
-                      : 'border border-gray-600 hover:border-electric-blue text-white hover:bg-electric-blue/10'
-                    : 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                }`}
-                disabled={!plan.available}
-              >
-                {plan.cta}
-              </button>
+        {/* Free Tier - Big Card */}
+        <div className="max-w-2xl mx-auto mb-16">
+          <div className="relative bg-gray-900/50 rounded-3xl border-2 border-electric-blue p-12 transition-all duration-300 hover:scale-105 shadow-lg shadow-electric-blue/20 hover:glow">
+            <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
+              <span className="bg-electric-blue text-black px-6 py-3 rounded-full text-lg font-bold">
+                Currently Free
+              </span>
             </div>
-          ))}
+            
+            <div className="text-center mb-8">
+              <h3 className="text-4xl font-bold mb-4 gradient-text">Free Tier</h3>
+              <p className="text-xl text-gray-300 mb-6">Perfect for getting started with AI prompt generation</p>
+              <div className="mb-6">
+                <span className="text-6xl font-bold text-electric-blue">$0</span>
+                <span className="text-xl text-gray-400 ml-2">forever</span>
+              </div>
+              <div className="inline-block bg-lime-green/20 text-lime-green px-4 py-2 rounded-full text-sm font-semibold mb-6">
+                Currently Unlimited
+              </div>
+            </div>
+            
+            <ul className="space-y-4 mb-8 text-lg">
+              <li className="flex items-start space-x-3">
+                <span className="text-electric-blue mt-1 flex-shrink-0 text-xl">✓</span>
+                <span className="text-gray-200">Unlimited prompts (during beta)</span>
+              </li>
+              <li className="flex items-start space-x-3">
+                <span className="text-electric-blue mt-1 flex-shrink-0 text-xl">✓</span>
+                <span className="text-gray-200">Access to Gemini & Groq AI models</span>
+              </li>
+              <li className="flex items-start space-x-3">
+                <span className="text-electric-blue mt-1 flex-shrink-0 text-xl">✓</span>
+                <span className="text-gray-200">All tone options (Professional, Friendly, Creative)</span>
+              </li>
+              <li className="flex items-start space-x-3">
+                <span className="text-electric-blue mt-1 flex-shrink-0 text-xl">✓</span>
+                <span className="text-gray-200">Multilingual support (6+ languages)</span>
+              </li>
+              <li className="flex items-start space-x-3">
+                <span className="text-electric-blue mt-1 flex-shrink-0 text-xl">✓</span>
+                <span className="text-gray-200">Agentic AI mode with multi-step reasoning</span>
+              </li>
+              <li className="flex items-start space-x-3">
+                <span className="text-electric-blue mt-1 flex-shrink-0 text-xl">✓</span>
+                <span className="text-gray-200">Complete prompt history</span>
+              </li>
+              <li className="flex items-start space-x-3">
+                <span className="text-electric-blue mt-1 flex-shrink-0 text-xl">✓</span>
+                <span className="text-gray-200">Community support</span>
+              </li>
+            </ul>
+            
+            <Link
+              href="/dashboard"
+              className="w-full bg-electric-blue hover:bg-electric-blue/80 text-black py-4 px-8 rounded-xl font-bold text-xl transition-all duration-200 hover:glow hover:scale-105 inline-block text-center"
+            >
+              Get Started Free
+            </Link>
+          </div>
+        </div>
+        
+        {/* Paid Plans Coming Soon */}
+        <div className="text-center mb-16">
+          <div className="max-w-4xl mx-auto bg-gray-900/30 rounded-3xl border border-gray-700 p-12">
+            <div className="mb-6">
+              <span className="bg-gradient-to-r from-neon-purple to-lime-green text-transparent bg-clip-text text-lg font-semibold tracking-wider uppercase">
+                🚀 Coming Soon
+              </span>
+            </div>
+            <h3 className="text-3xl md:text-4xl font-bold mb-4 gradient-text">Paid Plans Coming Soon</h3>
+            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+              We're working on Pro and Enterprise plans with advanced features, unlimited usage, and priority support.
+            </p>
+            <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+              <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700">
+                <h4 className="text-xl font-bold text-neon-purple mb-3">Pro Plan</h4>
+                <ul className="text-gray-300 space-y-2 text-left">
+                  <li>• Advanced AI models</li>
+                  <li>• Custom tone creation</li>
+                  <li>• API access</li>
+                  <li>• Priority support</li>
+                </ul>
+              </div>
+              <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700">
+                <h4 className="text-xl font-bold text-lime-green mb-3">Enterprise Plan</h4>
+                <ul className="text-gray-300 space-y-2 text-left">
+                  <li>• Custom AI training</li>
+                  <li>• White-label solution</li>
+                  <li>• Dedicated support</li>
+                  <li>• On-premise deployment</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* FAQ Section */}
