@@ -32,15 +32,17 @@ export default function MultilingualSection({ visibleElements }: MultilingualSec
       <div className="absolute inset-0 bg-gradient-to-r from-electric-blue/5 via-neon-purple/5 to-lime-green/5"></div>
       
       <div className="max-w-7xl mx-auto relative">
-        <div className="text-center mb-16" data-animate id="multilingual-header">
-          <div className={`transition-all duration-1000 ${visibleElements.has('multilingual-header') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+        <div className="text-center mb-16">
+          <div className="opacity-100 translate-y-0 transition-all duration-1000">
             <div className="inline-block mb-4">
               <span className="bg-gradient-to-r from-lime-green to-electric-blue text-transparent bg-clip-text text-sm font-semibold tracking-wider uppercase">
                 🌍 Global Reach
               </span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
-              Multilingual AI Prompts
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+                Multilingual AI Prompts
+              </span>
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
               Generate professional prompts in multiple languages with native-level fluency
@@ -50,20 +52,14 @@ export default function MultilingualSection({ visibleElements }: MultilingualSec
         
         <div className="relative">
           {/* World Map Outline */}
-          <div 
-            data-animate 
-            id="world-map"
-            className={`relative mx-auto max-w-4xl transition-all duration-1000 ${
-              visibleElements.has('world-map') ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-            }`}
-          >
+          <div className="relative mx-auto max-w-4xl opacity-100 scale-100 transition-all duration-1000">
             {/* SVG World Map */}
             <div className="relative h-64 md:h-80 flex items-center justify-center">
               <svg 
                 viewBox="0 0 800 400" 
-                className="w-full h-full opacity-20 stroke-current text-gray-400"
+                className="w-full h-full opacity-40 stroke-current text-gray-400 svg-enhanced"
                 fill="none"
-                strokeWidth="1"
+                strokeWidth="2"
               >
                 {/* Simplified world map outline */}
                 <path d="M150 200 Q200 150 300 180 Q400 160 500 190 Q600 170 700 200 Q650 250 550 230 Q450 240 350 220 Q250 250 150 200 Z" className="stroke-electric-blue/30 fill-electric-blue/5" />
@@ -136,13 +132,7 @@ export default function MultilingualSection({ visibleElements }: MultilingualSec
           </div>
           
           {/* Language Stats */}
-          <div 
-            data-animate 
-            id="language-stats"
-            className={`mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 transition-all duration-1000 delay-500 ${
-              visibleElements.has('language-stats') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-            }`}
-          >
+          <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 opacity-100 translate-y-0 transition-all duration-1000">
             <div className="text-center group hover:scale-105 transition-transform duration-300">
               <div className="text-3xl font-bold text-electric-blue mb-2">6+</div>
               <div className="text-gray-400 text-sm">Languages</div>

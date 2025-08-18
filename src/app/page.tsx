@@ -99,90 +99,38 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-x-hidden relative">
-      {/* Floating Particles Background */}
-      <canvas id="particles-canvas" className="absolute inset-0 pointer-events-none opacity-30"></canvas>
-      
-      {/* Animation Scripts */}
+    <div className="min-h-screen bg-black text-white overflow-x-hidden relative grid-background">
 
       
-      {/* Enhanced Animated Background */}
-      <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-electric-blue/5 via-transparent to-neon-purple/5"></div>
-        {/* Animated Grid Pattern */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `
-              linear-gradient(rgba(0, 191, 255, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(0, 191, 255, 0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px',
-            animation: 'gridMove 20s linear infinite'
-          }}></div>
-        </div>
-        {/* Floating Orbs */}
-        {isClient && (
-          <>
-            <div 
-              className="absolute w-96 h-96 bg-electric-blue/10 rounded-full blur-3xl animate-pulse"
-              style={{
-                left: `${mousePosition.x * 0.02}px`,
-                top: `${mousePosition.y * 0.02}px`,
-                transform: 'translate(-50%, -50%)',
-                animation: 'float 6s ease-in-out infinite'
-              }}
-            ></div>
-            <div 
-              className="absolute w-64 h-64 bg-neon-purple/10 rounded-full blur-3xl animate-pulse delay-1000"
-              style={{
-                right: `${(typeof window !== 'undefined' ? window.innerWidth : 1920) - mousePosition.x} * 0.01}px`,
-                bottom: `${(typeof window !== 'undefined' ? window.innerHeight : 1080) - mousePosition.y} * 0.01}px`,
-                transform: 'translate(50%, 50%)',
-                animation: 'float 8s ease-in-out infinite reverse'
-              }}
-            ></div>
-            <div 
-              className="absolute w-32 h-32 bg-lime-green/15 rounded-full blur-2xl animate-pulse"
-              style={{
-                left: `${mousePosition.x * 0.015}px`,
-                bottom: `${mousePosition.y * 0.01}px`,
-                transform: 'translate(-50%, 50%)',
-                animation: 'float 10s ease-in-out infinite'
-              }}
-            ></div>
-          </>
-        )}
-      </div>
-      
-      {/* Navigation */}
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-black/80 backdrop-blur-md border-b border-gray-800' : 'bg-transparent'
-      }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Glassmorphic Navigation */}
+      <nav className="fixed top-0 w-full z-50 bg-white/5 backdrop-blur-xl border-b border-white/10">
+        <div className="max-w-6xl mx-auto px-6">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Link href="/" className="text-2xl font-bold gradient-text">
+              <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
                 Promptly
               </Link>
             </div>
-            <div className="hidden md:block">
-              <div className="ml-10 flex items-baseline space-x-8">
-                <Link href="#features" className="hover:text-electric-blue transition-colors">
-                  Features
-                </Link>
-                <Link href="#how-it-works" className="hover:text-electric-blue transition-colors">
-                  How it Works
-                </Link>
-                <Link href="/pricing" className="hover:text-electric-blue transition-colors">
-                  Pricing
-                </Link>
-              </div>
+            <div className="hidden md:flex items-center space-x-8">
+              <Link href="/" className="text-white/90 hover:text-cyan-400 transition-colors font-medium">
+                Home
+              </Link>
+              <Link href="/about" className="text-white/90 hover:text-cyan-400 transition-colors font-medium">
+                About
+              </Link>
+              <Link href="/pricing" className="text-white/90 hover:text-cyan-400 transition-colors font-medium">
+                Pricing
+              </Link>
+              <Link href="/docs" className="text-white/90 hover:text-cyan-400 transition-colors font-medium">
+                Docs
+              </Link>
             </div>
             <div className="flex items-center space-x-4">
-              <Link
-                href="/dashboard"
-                className="bg-electric-blue hover:bg-electric-blue/80 text-black px-6 py-2 rounded-full font-medium transition-all duration-200 hover:glow"
-              >
+              <button className="text-white/90 hover:text-cyan-400 transition-colors">
+                <span className="sr-only">Search</span>
+                🔍
+              </button>
+              <Link href="/dashboard" className="bg-white/10 backdrop-blur-sm border border-white/20 text-white px-4 py-2 rounded-lg font-medium hover:bg-white/20 transition-colors">
                 Get Started
               </Link>
             </div>
@@ -195,62 +143,116 @@ export default function Home() {
         <HeroSection mousePosition={mousePosition} />
       </Suspense>
 
-      {/* Features Section */}
-      <Suspense fallback={<SectionSkeleton />}>
-        <FeaturesSection visibleElements={visibleElements} />
-      </Suspense>
+      {/* Faded Border Transition */}
+      <div className="hero-fade-border"></div>
 
-      {/* How It Works Section */}
-      <Suspense fallback={<SectionSkeleton />}>
-        <HowItWorksSection visibleElements={visibleElements} />
-      </Suspense>
+      {/* Content Sections with Animated Grid */}
+      <div className="section-grid">
+        {/* Features Section */}
+        <Suspense fallback={<SectionSkeleton />}>
+          <FeaturesSection visibleElements={visibleElements} />
+        </Suspense>
 
-      {/* Agent Mode Section */}
-      <Suspense fallback={<SectionSkeleton />}>
-        <AgentModeSection visibleElements={visibleElements} />
-      </Suspense>
+        {/* How It Works Section */}
+        <Suspense fallback={<SectionSkeleton />}>
+          <HowItWorksSection visibleElements={visibleElements} />
+        </Suspense>
 
-      {/* Multilingual Section */}
-      <Suspense fallback={<SectionSkeleton />}>
-        <MultilingualSection visibleElements={visibleElements} />
-      </Suspense>
+        {/* Agent Mode Section */}
+        <Suspense fallback={<SectionSkeleton />}>
+          <AgentModeSection visibleElements={visibleElements} />
+        </Suspense>
 
-      {/* CTA Section */}
-      <Suspense fallback={<SectionSkeleton />}>
-        <CTASection visibleElements={visibleElements} />
-      </Suspense>
+        {/* Multilingual Section */}
+        <Suspense fallback={<SectionSkeleton />}>
+          <MultilingualSection visibleElements={visibleElements} />
+        </Suspense>
+
+        {/* CTA Section */}
+        <Suspense fallback={<SectionSkeleton />}>
+          <CTASection visibleElements={visibleElements} />
+        </Suspense>
+      </div>
 
       {/* Footer */}
-      <footer className="border-t border-gray-800 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="col-span-2">
-              <Link href="/" className="text-2xl font-bold gradient-text">
-                Promptly
+      <footer className="bg-black/90 border-t border-gray-800 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="grid lg:grid-cols-5 md:grid-cols-4 gap-8">
+            {/* Brand Section */}
+            <div className="lg:col-span-2">
+              <Link href="/" className="inline-block mb-6">
+                <span className="text-3xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+                  Promptly
+                </span>
               </Link>
-              <p className="text-gray-400 mt-4 max-w-md">
-                AI-powered multilingual SaaS for professional prompt generation with advanced reasoning capabilities.
+              <p className="text-gray-300 text-lg leading-relaxed max-w-md mb-6">
+                Transform your ideas into professional prompts with advanced AI technology. Multilingual support for global reach.
               </p>
+              {/* Social Links */}
+              <div className="flex space-x-4">
+                <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-cyan-600 rounded-full flex items-center justify-center transition-colors duration-200">
+                  <span className="text-white text-sm">𝕏</span>
+                </a>
+                <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-full flex items-center justify-center transition-colors duration-200">
+                  <span className="text-white text-sm">in</span>
+                </a>
+                <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors duration-200">
+                  <span className="text-white text-sm">📧</span>
+                </a>
+              </div>
             </div>
+            
+            {/* Product Links */}
             <div>
-              <h3 className="text-lg font-semibold mb-4">Product</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="#features" className="hover:text-white transition-colors">Features</Link></li>
-                <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-                <li><Link href="/dashboard" className="hover:text-white transition-colors">Dashboard</Link></li>
+              <h3 className="text-white font-semibold text-lg mb-6">Product</h3>
+              <ul className="space-y-4">
+                <li><Link href="#features" className="text-gray-400 hover:text-cyan-400 transition-colors duration-200">Features</Link></li>
+                <li><Link href="/pricing" className="text-gray-400 hover:text-cyan-400 transition-colors duration-200">Pricing</Link></li>
+                <li><Link href="/dashboard" className="text-gray-400 hover:text-cyan-400 transition-colors duration-200">Dashboard</Link></li>
+                
               </ul>
             </div>
+            
+            {/* Company Links */}
             <div>
-              <h3 className="text-lg font-semibold mb-4">Company</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li><Link href="/about" className="hover:text-white transition-colors">About</Link></li>
-                <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
-                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link></li>
+              <h3 className="text-white font-semibold text-lg mb-6">Company</h3>
+              <ul className="space-y-4">
+                <li><Link href="/about" className="text-gray-400 hover:text-cyan-400 transition-colors duration-200">About</Link></li>
+                <li><Link href="/contact" className="text-gray-400 hover:text-cyan-400 transition-colors duration-200">Contact</Link></li>
+                <li><Link href="/careers" className="text-gray-400 hover:text-cyan-400 transition-colors duration-200">Careers</Link></li>
+                <li><Link href="/blog" className="text-gray-400 hover:text-cyan-400 transition-colors duration-200">Blog</Link></li>
               </ul>
+            </div>
+            
+            {/* Newsletter */}
+            <div>
+              <h3 className="text-white font-semibold text-lg mb-6">Stay Updated</h3>
+              <p className="text-gray-400 mb-4">Get the latest updates and AI insights.</p>
+              <div className="flex flex-col space-y-3">
+                <input 
+                  type="email" 
+                  placeholder="Enter your email"
+                  className="bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-colors duration-200"
+                />
+                <button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-cyan-500/25">
+                  Subscribe
+                </button>
+              </div>
             </div>
           </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2025 Promptly. All rights reserved.</p>
+          
+          {/* Bottom Section */}
+          <div className="border-t border-gray-700 mt-12 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+              <div className="text-gray-400">
+                <p>&copy; 2025 Promptly. All rights reserved.</p>
+              </div>
+              <div className="flex space-x-6 text-sm">
+                <Link href="/privacy" className="text-gray-400 hover:text-cyan-400 transition-colors duration-200">Privacy Policy</Link>
+                <Link href="/terms" className="text-gray-400 hover:text-cyan-400 transition-colors duration-200">Terms of Service</Link>
+                <Link href="/cookies" className="text-gray-400 hover:text-cyan-400 transition-colors duration-200">Cookie Policy</Link>
+              </div>
+            </div>
           </div>
         </div>
       </footer>

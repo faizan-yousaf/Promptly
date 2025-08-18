@@ -96,17 +96,22 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Navigation */}
-      <nav className="border-b border-gray-800 bg-black/80 backdrop-blur-md">
+      <nav className="border-b border-gray-800 bg-black/95 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Link href="/" className="text-2xl font-bold gradient-text">
-              Promptly
+            <Link href="/" className="text-2xl font-bold text-white hover:text-cyan-400 transition-colors">
+              <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+                Promptly
+              </span>
             </Link>
-            <div className="flex items-center space-x-4">
-              <Link href="/pricing" className="hover:text-electric-blue transition-colors">
+            <div className="flex items-center space-x-6">
+              <Link href="/" className="text-gray-300 hover:text-white transition-colors">
+                Home
+              </Link>
+              <Link href="/pricing" className="text-gray-300 hover:text-white transition-colors">
                 Pricing
               </Link>
-              <button className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg transition-colors">
+              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors">
                 Profile
               </button>
             </div>
@@ -120,24 +125,26 @@ export default function Dashboard() {
           <div className="lg:col-span-2 space-y-6">
             {/* Header */}
             <div>
-              <h1 className="text-3xl font-bold mb-2 gradient-text">
-                Generate Perfect Prompts
+              <h1 className="text-4xl font-extrabold mb-4 tracking-tight">
+                <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+                  Generate Perfect Prompts
+                </span>
               </h1>
-              <p className="text-gray-400">
+              <p className="text-xl text-gray-300 leading-relaxed">
                 Describe your idea and let AI create the perfect prompt for you.
               </p>
             </div>
 
             {/* Input Area */}
-            <div className="bg-gray-900/50 rounded-2xl border border-gray-800 p-6">
-              <label className="block text-sm font-medium mb-3">
+            <div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6 backdrop-blur-sm">
+              <label className="block text-lg font-semibold mb-4 text-white">
                 Describe your idea or goal:
               </label>
               <textarea
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 placeholder="Example: I need a prompt to help me write engaging social media posts for a tech startup..."
-                className="w-full h-32 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-electric-blue focus:ring-1 focus:ring-electric-blue resize-none"
+                className="w-full h-36 bg-gray-700 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 resize-none transition-all duration-200"
               />
             </div>
 
@@ -265,15 +272,15 @@ export default function Dashboard() {
             <button
               onClick={handleGenerate}
               disabled={!userInput.trim() || isGenerating}
-              className="w-full bg-electric-blue hover:bg-electric-blue/80 disabled:bg-gray-700 disabled:cursor-not-allowed text-black font-semibold py-4 px-8 rounded-xl transition-all duration-200 hover:glow hover:scale-[1.02] disabled:hover:scale-100 disabled:hover:glow-none"
+              className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 disabled:from-gray-700 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25 hover:scale-[1.02] disabled:hover:scale-100 disabled:hover:shadow-none"
             >
               {isGenerating ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black"></div>
-                  <span>Generating...</span>
+                <div className="flex items-center justify-center space-x-3">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                  <span className="text-lg">Generating...</span>
                 </div>
               ) : (
-                'Generate Perfect Prompt'
+                <span className="text-lg">✨ Generate Perfect Prompt</span>
               )}
             </button>
           </div>
