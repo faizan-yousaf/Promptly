@@ -14,27 +14,25 @@ export default function AgentModeSection({ visibleElements }: AgentModeSectionPr
     <section className="py-20 px-4 sm:px-6 lg:px-8 relative z-10 bg-gray-900/20">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <div className="opacity-100 translate-y-0 transition-all duration-1000">
-            <div className="inline-block mb-6">
-              <span className="bg-gradient-to-r from-purple-400 to-cyan-400 text-transparent bg-clip-text text-sm font-semibold tracking-wider uppercase">
-                🧠 Advanced AI Reasoning
-              </span>
-            </div>
-            <h2 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">
-              <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
-                Agent Mode
-              </span>
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              Toggle between simple responses and advanced multi-step AI reasoning
-            </p>
+          <div className="inline-block mb-6">
+            <span className="bg-gradient-to-r from-purple-400 to-cyan-400 text-transparent bg-clip-text text-sm font-semibold tracking-wider uppercase">
+              🧠 Advanced AI Reasoning
+            </span>
           </div>
+          <h2 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">
+            <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+              Agent Mode
+            </span>
+          </h2>
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            Toggle between simple responses and advanced multi-step AI reasoning
+          </p>
         </div>
         
         <div className="flex flex-col lg:flex-row items-center justify-center gap-12">
           {/* Left Side - Standard Mode */}
           <div className={`flex-1 max-w-md text-center transition-all duration-700 transform-gpu ${
-            !isAgentMode ? 'scale-105 opacity-100' : 'scale-95 opacity-70'
+            !isAgentMode ? 'scale-105' : 'scale-95'
           }`}>
             <div className={`relative p-8 rounded-3xl transition-all duration-500 transform-style-preserve-3d backdrop-blur-xl ${
               !isAgentMode 
@@ -42,9 +40,9 @@ export default function AgentModeSection({ visibleElements }: AgentModeSectionPr
                 : 'bg-gradient-to-br from-gray-900/40 to-gray-800/20 border border-gray-700/30'
             } hover:scale-105 hover:-translate-y-2 hover:rotate-y-5`}>
               {/* Glow effect */}
-              <div className={`absolute inset-0 rounded-3xl transition-opacity duration-500 ${
+              <div className={`absolute inset-0 rounded-3xl bg-gradient-to-r from-cyan-400/10 to-blue-500/10 blur-xl ${
                 !isAgentMode ? 'opacity-20' : 'opacity-0'
-              } bg-gradient-to-r from-cyan-400/10 to-blue-500/10 blur-xl`}></div>
+              }`}></div>
               
               <div className="relative z-10">
                 <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-all duration-500 ${
@@ -124,7 +122,7 @@ export default function AgentModeSection({ visibleElements }: AgentModeSectionPr
           
           {/* Right Side - Agent Mode */}
           <div className={`flex-1 max-w-md text-center transition-all duration-700 transform-gpu ${
-            isAgentMode ? 'scale-105 opacity-100' : 'scale-95 opacity-70'
+            isAgentMode ? 'scale-105' : 'scale-95'
           }`}>
             <div className={`relative p-8 rounded-3xl transition-all duration-500 transform-style-preserve-3d backdrop-blur-xl ${
               isAgentMode 
@@ -159,17 +157,17 @@ export default function AgentModeSection({ visibleElements }: AgentModeSectionPr
                 {isAgentMode && (
                   <div className="space-y-4 text-sm animate-fade-in">
                     <div className="flex items-center justify-center space-x-3 text-purple-300">
-                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                      <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
                       <span className="font-medium">Analyze Context</span>
                       <ArrowRight className="w-4 h-4 text-purple-400" />
                     </div>
                     <div className="flex items-center justify-center space-x-3 text-cyan-300">
-                      <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
-                      <span className="font-medium">Multi-step Reasoning</span>
-                      <ArrowRight className="w-4 h-4 text-cyan-400" />
-                    </div>
-                    <div className="flex items-center justify-center space-x-3 text-blue-300">
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+                      <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                    <span className="font-medium">Multi-step Reasoning</span>
+                    <ArrowRight className="w-4 h-4 text-cyan-400" />
+                  </div>
+                  <div className="flex items-center justify-center space-x-3 text-blue-300">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
                       <span className="font-medium">Optimized Output</span>
                     </div>
                   </div>

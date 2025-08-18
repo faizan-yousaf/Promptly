@@ -32,51 +32,53 @@ export default function HowItWorksSection({ visibleElements }: HowItWorksSection
   return (
     <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-900/30 relative z-10">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16" data-animate id="how-it-works-header">
-          <div className={`transition-all duration-1000 ${visibleElements.has('how-it-works-header') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            <div className="inline-block mb-4">
-              <span className="bg-gradient-to-r from-electric-blue to-neon-purple text-transparent bg-clip-text text-sm font-semibold tracking-wider uppercase">
-                ⚡ Simple Process
-              </span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
-              How It Works
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Three simple steps to generate perfect prompts
-            </p>
+        <div className="text-center mb-16">
+          <div className="inline-block mb-6">
+            <span className="bg-gradient-to-r from-cyan-400 to-purple-600 text-transparent bg-clip-text text-sm font-semibold tracking-wider uppercase">
+              ⚡ Simple Process
+            </span>
           </div>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+            How It Works
+          </h2>
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            Three simple steps to generate perfect prompts
+          </p>
         </div>
         
-        <div className="grid md:grid-cols-3 gap-8 relative">
-          {/* Connection Lines */}
-          <div className="hidden md:block absolute top-10 left-1/3 w-1/3 h-0.5 bg-gradient-to-r from-electric-blue to-neon-purple opacity-30"></div>
-          <div className="hidden md:block absolute top-10 right-1/3 w-1/3 h-0.5 bg-gradient-to-r from-neon-purple to-lime-green opacity-30"></div>
+        <div className="relative grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
           
-          {steps.map((step, index) => (
-            <div 
-              key={index}
-              data-animate 
-              id={`step-${index}`}
-              className={`text-center group transform transition-all duration-1000 hover:scale-105 ${
-                visibleElements.has(`step-${index}`) 
-                  ? 'opacity-100 translate-y-0' 
-                  : 'opacity-0 translate-y-10'
-              }`}
-              style={{ 
-                transitionDelay: visibleElements.has(`step-${index}`) ? step.delay : '0s'
-              }}
-            >
-              <div className={`relative w-20 h-20 bg-${step.color}/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-${step.color} group-hover:border-${step.color} group-hover:glow transition-all duration-300`}>
-                <span className={`text-${step.color} text-3xl font-bold group-hover:scale-110 transition-transform duration-300`}>{step.number}</span>
-                <div className={`absolute inset-0 bg-${step.color}/10 rounded-full scale-0 group-hover:scale-150 transition-transform duration-500 opacity-0 group-hover:opacity-100`}></div>
+          {steps.map((step, index) => {
+            const getStepColor = (color: string) => {
+              switch (color) {
+                case 'electric-blue':
+                  return 'cyan-400';
+                case 'neon-purple':
+                  return 'purple-400';
+                case 'lime-green':
+                  return 'green-400';
+                default:
+                  return 'cyan-400';
+              }
+            };
+            const stepColor = getStepColor(step.color);
+            
+            return (
+              <div 
+                key={index}
+                className="text-center group transform transition-all duration-300 hover:scale-105"
+              >
+                <div className={`relative w-20 h-20 bg-${stepColor}/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-${stepColor} group-hover:border-${stepColor} transition-all duration-300`}>
+                  <span className={`text-${stepColor} text-3xl font-bold group-hover:scale-110 transition-transform duration-300`}>{step.number}</span>
+                  <div className={`absolute inset-0 bg-${stepColor}/10 rounded-full scale-0 group-hover:scale-150 transition-transform duration-500 opacity-0 group-hover:opacity-100`}></div>
+                </div>
+                <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-cyan-400 transition-colors">{step.title}</h3>
+                <p className="text-gray-300 group-hover:text-gray-200 transition-colors leading-relaxed">
+                  {step.description}
+                </p>
               </div>
-              <h3 className="text-2xl font-bold mb-4 group-hover:text-white transition-colors">{step.title}</h3>
-              <p className="text-gray-300 group-hover:text-gray-200 transition-colors">
-                {step.description}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

@@ -9,39 +9,39 @@ interface CTASectionProps {
 export default function CTASection({ visibleElements }: CTASectionProps) {
   return (
     <section className="py-20 px-4 sm:px-6 lg:px-8 relative z-10">
-      <div className="max-w-4xl mx-auto text-center" data-animate id="cta-section">
-        <div className={`transition-all duration-1000 ${visibleElements.has('cta-section') ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+      <div className="max-w-4xl mx-auto text-center">
+        <div>
           <div className="relative">
             {/* Background Glow */}
-            <div className="absolute inset-0 bg-gradient-to-r from-electric-blue/10 via-neon-purple/10 to-lime-green/10 rounded-3xl blur-3xl"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/10 via-purple-500/10 to-green-400/10 rounded-3xl blur-3xl"></div>
             
             <div className="relative bg-gray-900/50 p-12 rounded-3xl border border-gray-800 backdrop-blur-sm">
-              <div className="inline-block mb-4">
-                <span className="bg-gradient-to-r from-electric-blue to-neon-purple text-transparent bg-clip-text text-sm font-semibold tracking-wider uppercase">
+              <div className="inline-block mb-6">
+                <span className="bg-gradient-to-r from-cyan-400 to-purple-600 text-transparent bg-clip-text text-sm font-semibold tracking-wider uppercase">
                   🚀 Get Started Today
                 </span>
               </div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
                 Ready to Create
-                <span className="gradient-text block">Amazing Prompts?</span>
+                <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent block">Amazing Prompts?</span>
               </h2>
-              <p className="text-xl text-gray-300 mb-8">
+              <p className="text-xl text-gray-300 mb-8 leading-relaxed">
                 Join thousands of professionals who trust Promptly for their AI prompt needs.
               </p>
               
               {/* Stats */}
               <div className="grid grid-cols-3 gap-8 mb-8">
                 <div className="text-center">
-                  <div className="text-3xl font-bold gradient-text mb-2">50K+</div>
-                  <div className="text-gray-400 text-sm">Prompts Generated</div>
+                  <div className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent mb-3">30K+</div>
+                  <div className="text-gray-300 font-medium">Prompts Generated</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold gradient-text mb-2">10K+</div>
-                  <div className="text-gray-400 text-sm">Happy Users</div>
+                  <div className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent mb-3">1.2K+</div>
+                  <div className="text-gray-300 font-medium">Happy Users</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold gradient-text mb-2">99.9%</div>
-                  <div className="text-gray-400 text-sm">Uptime</div>
+                  <div className="text-4xl font-bold bg-gradient-to-r from-green-400 to-cyan-500 bg-clip-text text-transparent mb-3">100%</div>
+                  <div className="text-gray-300 font-medium">Uptime</div>
                 </div>
               </div>
               
