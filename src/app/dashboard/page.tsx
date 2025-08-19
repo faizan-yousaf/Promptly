@@ -1,113 +1,354 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 
-type AIModel = 'gemini' | 'groq';
-type Tone = 'professional' | 'friendly' | 'creative' | 'technical';
-type UserRole = 'marketer' | 'developer' | 'writer' | 'researcher' | 'entrepreneur' | 'student';
-type Language = 'en' | 'es' | 'fr';
+type Role = 'developer' | 'marketer' | 'writer' | 'researcher' | 'entrepreneur' | 'student';
+type OutputFormat = 'text' | 'json';
+type ResponseLength = 'short' | 'medium' | 'long';
+type TuningOption = 'creative' | 'balanced' | 'precise';
 
-interface GeneratedPrompt {
+interface ChatMessage {
   id: string;
-  prompt: string;
-  model: AIModel;
-  tone: Tone;
-  role: UserRole;
-  language: Language;
-  agentMode: boolean;
+  content: string;
+  isUser: boolean;
   timestamp: Date;
-  processingTime: number;
+  role?: Role;
+  format?: OutputFormat;
+  length?: ResponseLength;
+  tuning?: TuningOption;
+}
+
+interface ChatSession {
+  id: string;
+  title: string;
+  messages: ChatMessage[];
+  createdAt: Date;
+  lastMessage: Date;
 }
 
 export default function Dashboard() {
-  const [userInput, setUserInput] = useState('');
-  const [selectedModel, setSelectedModel] = useState<AIModel>('gemini');
-  const [selectedTone, setSelectedTone] = useState<Tone>('professional');
-  const [selectedRole, setSelectedRole] = useState<UserRole>('marketer');
-  const [selectedLanguage, setSelectedLanguage] = useState<Language>('en');
-  const [agentMode, setAgentMode] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedPrompt, setGeneratedPrompt] = useState<GeneratedPrompt | null>(null);
-  const [history, setHistory] = useState<GeneratedPrompt[]>([]);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
+  
+  // Configuration states
+  const [selectedRole, setSelectedRole] = useState<Role>('developer');
+  const [outputFormat, setOutputFormat] = useState<OutputFormat>('text');
+  const [responseLength, setResponseLength] = useState<ResponseLength>('medium');
+  const [tuningOption, setTuningOption] = useState<TuningOption>('balanced');
+  
+  // UI states
+  const [showRoleSelector, setShowRoleSelector] = useState(false);
+  const [showFormatSelector, setShowFormatSelector] = useState(false);
+  const [showLengthSelector, setShowLengthSelector] = useState(false);
+  const [showTuningSelector, setShowTuningSelector] = useState(false);
+  
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleGenerate = async () => {
-    if (!userInput.trim()) return;
+  useEffect(() => {
+    scrollToBottom();
+  }, [currentSession?.messages]);
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const createNewSession = () => {
+    const newSession: ChatSession = {
+      id: Date.now().toString(),
+      title: 'New Chat',
+      messages: [],
+      createdAt: new Date(),
+      lastMessage: new Date(),
+    };
+    setCurrentSession(newSession);
+    setChatSessions(prev => [newSession, ...prev]);
+  };
+
+  const generateSessionTitle = (firstMessage: string): string => {
+    return firstMessage.length > 30 
+      ? firstMessage.substring(0, 30) + '...'
+      : firstMessage;
+  };
+
+  const handleSendMessage = async () => {
+    if (!inputValue.trim() || isGenerating) return;
+
+    let session = currentSession;
+    if (!session) {
+      session = {
+        id: Date.now().toString(),
+        title: generateSessionTitle(inputValue),
+        messages: [],
+        createdAt: new Date(),
+        lastMessage: new Date(),
+      };
+      setCurrentSession(session);
+      setChatSessions(prev => [session!, ...prev]);
+    }
+
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      content: inputValue,
+      isUser: true,
+      timestamp: new Date(),
+      role: selectedRole,
+      format: outputFormat,
+      length: responseLength,
+      tuning: tuningOption,
+    };
+
+    const updatedSession = {
+      ...session,
+      messages: [...session.messages, userMessage],
+      lastMessage: new Date(),
+      title: session.messages.length === 0 ? generateSessionTitle(inputValue) : session.title,
+    };
+
+    setCurrentSession(updatedSession);
+    setChatSessions(prev => prev.map(s => s.id === session!.id ? updatedSession : s));
+    setInputValue('');
     setIsGenerating(true);
-    const startTime = Date.now();
+    setIsTyping(true);
 
     try {
+      // Simulate typing delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       const response = await fetch('/api/generate-prompt', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userInput,
-          model: selectedModel,
-          tone: selectedTone,
+          userInput: inputValue,
+          model: 'openrouter',
+          tone: tuningOption === 'creative' ? 'creative' : tuningOption === 'precise' ? 'professional' : 'friendly',
           role: selectedRole,
-          language: selectedLanguage,
-          agentMode,
+          language: 'en',
+          agentMode: false,
+          openRouterModel: 'openai/gpt-4o',
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate prompt');
+        throw new Error('Failed to generate response');
       }
 
       const data = await response.json();
-      const processingTime = Date.now() - startTime;
-
-      const newPrompt: GeneratedPrompt = {
-        id: Date.now().toString(),
-        prompt: data.prompt,
-        model: selectedModel,
-        tone: selectedTone,
-        role: selectedRole,
-        language: selectedLanguage,
-        agentMode,
+      
+      const aiMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        content: outputFormat === 'json' ? formatAsJSON(data.prompt) : data.prompt,
+        isUser: false,
         timestamp: new Date(),
-        processingTime,
       };
 
-      setGeneratedPrompt(newPrompt);
-      setHistory(prev => [newPrompt, ...prev]);
+      const finalSession = {
+        ...updatedSession,
+        messages: [...updatedSession.messages, aiMessage],
+        lastMessage: new Date(),
+      };
+
+      setCurrentSession(finalSession);
+      setChatSessions(prev => prev.map(s => s.id === session!.id ? finalSession : s));
     } catch (error) {
-      console.error('Error generating prompt:', error);
-      // Handle error state
+      console.error('Error generating response:', error);
+      const errorMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        content: 'Sorry, I encountered an error generating a response. Please try again.',
+        isUser: false,
+        timestamp: new Date(),
+      };
+
+      const errorSession = {
+        ...updatedSession,
+        messages: [...updatedSession.messages, errorMessage],
+        lastMessage: new Date(),
+      };
+
+      setCurrentSession(errorSession);
+      setChatSessions(prev => prev.map(s => s.id === session!.id ? errorSession : s));
     } finally {
       setIsGenerating(false);
+      setIsTyping(false);
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    // Add toast notification here
+  const formatAsJSON = (content: string) => {
+    try {
+      return JSON.stringify({ response: content }, null, 2);
+    } catch {
+      return content;
+    }
   };
 
-  const languageNames = {
-    en: 'English',
-    es: 'Español',
-    fr: 'Français'
+  const deleteSession = (sessionId: string) => {
+    setChatSessions(prev => prev.filter(s => s.id !== sessionId));
+    if (currentSession?.id === sessionId) {
+      setCurrentSession(null);
+    }
   };
+
+  const exportChat = (session: ChatSession) => {
+    const content = session.messages
+      .map(m => `${m.isUser ? 'User' : 'AI'} (${m.timestamp.toLocaleTimeString()}): ${m.content}`)
+      .join('\n\n');
+    
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chat-${session.title}-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const roleOptions = [
+    { value: 'developer', label: '👨‍💻 Developer', desc: 'Technical solutions & code' },
+    { value: 'marketer', label: '📈 Marketer', desc: 'Marketing strategies & campaigns' },
+    { value: 'writer', label: '✍️ Writer', desc: 'Content creation & editing' },
+    { value: 'researcher', label: '🔬 Researcher', desc: 'Analysis & investigation' },
+    { value: 'entrepreneur', label: '🚀 Entrepreneur', desc: 'Business & startup advice' },
+    { value: 'student', label: '🎓 Student', desc: 'Learning & education' },
+  ];
+
+  const formatOptions = [
+    { value: 'text', label: '📝 Text', desc: 'Plain text response' },
+    { value: 'json', label: '⚡ JSON', desc: 'Structured JSON format' },
+  ];
+
+  const lengthOptions = [
+    { value: 'short', label: '⚡ Short', desc: 'Brief & concise' },
+    { value: 'medium', label: '📄 Medium', desc: 'Balanced detail' },
+    { value: 'long', label: '📚 Long', desc: 'Comprehensive & detailed' },
+  ];
+
+  const tuningOptions = [
+    { value: 'creative', label: '🎨 Creative', desc: 'Innovative & original' },
+    { value: 'balanced', label: '⚖️ Balanced', desc: 'Practical & reliable' },
+    { value: 'precise', label: '🎯 Precise', desc: 'Accurate & focused' },
+  ];
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Navigation */}
-      <nav className="border-b border-gray-800 bg-black/95 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/" className="text-2xl font-bold text-white hover:text-cyan-400 transition-colors">
-              <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
-                Promptly
+    <div className="flex h-screen bg-black text-white">
+      {/* Sidebar */}
+      <div className={`bg-gray-900 border-r border-gray-800 transition-all duration-300 ${
+        sidebarOpen ? 'w-80' : 'w-16'
+      }`}>
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="p-4 border-b border-gray-800">
+            <div className="flex items-center justify-between">
+              {sidebarOpen && (
+                <Link href="/" className="text-xl font-bold">
+                  <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                    Promptly
+                  </span>
+                </Link>
+              )}
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              >
+                {sidebarOpen ? '←' : '→'}
+              </button>
+            </div>
+            {sidebarOpen && (
+              <button
+                onClick={createNewSession}
+                className="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                <span>➕</span> New Chat
+              </button>
+            )}
+          </div>
+
+          {/* Chat History */}
+          {sidebarOpen && (
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              {chatSessions.length === 0 ? (
+                <div className="text-gray-500 text-sm text-center py-8">
+                  No conversations yet
+                </div>
+              ) : (
+                chatSessions.map((session) => (
+                  <div
+                    key={session.id}
+                    className={`group p-3 rounded-lg cursor-pointer transition-colors ${
+                      currentSession?.id === session.id
+                        ? 'bg-blue-600/20 border border-blue-600/30'
+                        : 'hover:bg-gray-800'
+                    }`}
+                    onClick={() => setCurrentSession(session)}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate">
+                          {session.title}
+                        </div>
+                        <div className="text-xs text-gray-400 mt-1">
+                          {session.lastMessage.toLocaleDateString()}
+                        </div>
+                      </div>
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            exportChat(session);
+                          }}
+                          className="p-1 hover:bg-gray-700 rounded text-xs"
+                          title="Export"
+                        >
+                          📥
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteSession(session.id);
+                          }}
+                          className="p-1 hover:bg-red-600 rounded text-xs"
+                          title="Delete"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Top Navigation */}
+        <nav className="border-b border-gray-800 bg-black/95 backdrop-blur-sm p-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span className="text-sm text-gray-400">
+                {currentSession ? currentSession.title : 'Select a chat or start a new one'}
               </span>
-            </Link>
-            <div className="flex items-center space-x-6">
-              <Link href="/" className="text-gray-300 hover:text-white transition-colors">
-                Home
-              </Link>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-xs text-gray-500">Powered by OpenAI via OpenRouter</span>
               <Link href="/pricing" className="text-gray-300 hover:text-white transition-colors">
                 Pricing
               </Link>
@@ -116,258 +357,216 @@ export default function Dashboard() {
               </button>
             </div>
           </div>
-        </div>
-      </nav>
+        </nav>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Input Section */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Header */}
-            <div>
-              <h1 className="text-4xl font-extrabold mb-4 tracking-tight">
-                <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
-                  Generate Perfect Prompts
-                </span>
-              </h1>
-              <p className="text-xl text-gray-300 leading-relaxed">
-                Describe your idea and let AI create the perfect prompt for you.
-              </p>
-            </div>
-
-            {/* Input Area */}
-            <div className="bg-gray-800/50 rounded-2xl border border-gray-700 p-6 backdrop-blur-sm">
-              <label className="block text-lg font-semibold mb-4 text-white">
-                Describe your idea or goal:
-              </label>
-              <textarea
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                placeholder="Example: I need a prompt to help me write engaging social media posts for a tech startup..."
-                className="w-full h-36 bg-gray-700 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 resize-none transition-all duration-200"
-              />
-            </div>
-
-            {/* Settings Grid */}
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* AI Model Selection */}
-              <div className="bg-gray-900/50 rounded-2xl border border-gray-800 p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  <span className="text-electric-blue mr-2">🤖</span>
-                  AI Model
-                </h3>
-                <div className="space-y-3">
-                  <label className="flex items-center space-x-3 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="model"
-                      value="gemini"
-                      checked={selectedModel === 'gemini'}
-                      onChange={(e) => setSelectedModel(e.target.value as AIModel)}
-                      className="text-electric-blue focus:ring-electric-blue"
-                    />
-                    <div>
-                      <div className="font-medium">Gemini Pro</div>
-                      <div className="text-sm text-gray-400">Google's advanced AI model</div>
-                    </div>
-                  </label>
-                  <label className="flex items-center space-x-3 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="model"
-                      value="groq"
-                      checked={selectedModel === 'groq'}
-                      onChange={(e) => setSelectedModel(e.target.value as AIModel)}
-                      className="text-electric-blue focus:ring-electric-blue"
-                    />
-                    <div>
-                      <div className="font-medium">Groq</div>
-                      <div className="text-sm text-gray-400">Ultra-fast inference</div>
-                    </div>
-                  </label>
-                </div>
-              </div>
-
-              {/* Tone Selection */}
-              <div className="bg-gray-900/50 rounded-2xl border border-gray-800 p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  <span className="text-neon-purple mr-2">🎨</span>
-                  Tone
-                </h3>
-                <select
-                  value={selectedTone}
-                  onChange={(e) => setSelectedTone(e.target.value as Tone)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple"
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {currentSession && currentSession.messages.length > 0 ? (
+            <div className="max-w-4xl mx-auto space-y-6">
+              {currentSession.messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
                 >
-                  <option value="professional">Professional</option>
-                  <option value="friendly">Friendly</option>
-                  <option value="creative">Creative</option>
-                  <option value="technical">Technical</option>
-                </select>
-              </div>
-
-              {/* Role Selection */}
-              <div className="bg-gray-900/50 rounded-2xl border border-gray-800 p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  <span className="text-lime-green mr-2">👤</span>
-                  Your Role
-                </h3>
-                <select
-                  value={selectedRole}
-                  onChange={(e) => setSelectedRole(e.target.value as UserRole)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-lime-green focus:ring-1 focus:ring-lime-green"
-                >
-                  <option value="marketer">Marketer</option>
-                  <option value="developer">Developer</option>
-                  <option value="writer">Writer</option>
-                  <option value="researcher">Researcher</option>
-                  <option value="entrepreneur">Entrepreneur</option>
-                  <option value="student">Student</option>
-                </select>
-              </div>
-
-              {/* Language Selection */}
-              <div className="bg-gray-900/50 rounded-2xl border border-gray-800 p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  <span className="text-electric-blue mr-2">🌍</span>
-                  Language
-                </h3>
-                <select
-                  value={selectedLanguage}
-                  onChange={(e) => setSelectedLanguage(e.target.value as Language)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-electric-blue focus:ring-1 focus:ring-electric-blue"
-                >
-                  <option value="en">{languageNames.en}</option>
-                  <option value="es">{languageNames.es}</option>
-                  <option value="fr">{languageNames.fr}</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Agentic AI Toggle */}
-            <div className="bg-gray-900/50 rounded-2xl border border-gray-800 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2 flex items-center">
-                    <span className="text-neon-purple mr-2">🧠</span>
-                    Agentic AI Mode
-                  </h3>
-                  <p className="text-gray-400 text-sm">
-                    Enable advanced reasoning and multi-step thinking for complex prompts
-                  </p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={agentMode}
-                    onChange={(e) => setAgentMode(e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-neon-purple/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-neon-purple"></div>
-                </label>
-              </div>
-            </div>
-
-            {/* Generate Button */}
-            <button
-              onClick={handleGenerate}
-              disabled={!userInput.trim() || isGenerating}
-              className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 disabled:from-gray-700 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-bold py-4 px-8 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/25 hover:scale-[1.02] disabled:hover:scale-100 disabled:hover:shadow-none"
-            >
-              {isGenerating ? (
-                <div className="flex items-center justify-center space-x-3">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                  <span className="text-lg">Generating...</span>
-                </div>
-              ) : (
-                <span className="text-lg">✨ Generate Perfect Prompt</span>
-              )}
-            </button>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Generated Prompt */}
-            {generatedPrompt && (
-              <div className="bg-gray-900/50 rounded-2xl border border-gray-800 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold gradient-text">
-                    Generated Prompt
-                  </h3>
-                  <button
-                    onClick={() => copyToClipboard(generatedPrompt.prompt)}
-                    className="text-electric-blue hover:text-electric-blue/80 transition-colors"
+                  <div
+                    className={`max-w-3xl p-4 rounded-2xl ${
+                      message.isUser
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-800 text-gray-100'
+                    }`}
                   >
-                    📋 Copy
-                  </button>
+                    <div className="whitespace-pre-wrap">{message.content}</div>
+                    <div className="text-xs opacity-70 mt-2">
+                      {message.timestamp.toLocaleTimeString()}
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-gray-800 rounded-lg p-4 mb-4">
-                  <p className="text-gray-100 whitespace-pre-wrap">
-                    {generatedPrompt.prompt}
-                  </p>
+              ))}
+              {isTyping && (
+                <div className="flex justify-start">
+                  <div className="bg-gray-800 p-4 rounded-2xl">
+                    <div className="flex space-x-2">
+                      <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-xs text-gray-400 space-y-1">
-                  <div>Model: {generatedPrompt.model}</div>
-                  <div>Tone: {generatedPrompt.tone}</div>
-                  <div>Role: {generatedPrompt.role}</div>
-                  <div>Language: {languageNames[generatedPrompt.language]}</div>
-                  <div>Agent Mode: {generatedPrompt.agentMode ? 'On' : 'Off'}</div>
-                  <div>Processing: {generatedPrompt.processingTime}ms</div>
-                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          ) : (
+            <div className="h-full flex items-center justify-center">
+              <div className="text-center">
+                <div className="text-6xl mb-4">💬</div>
+                <h2 className="text-2xl font-bold mb-2">Start a Conversation</h2>
+                <p className="text-gray-400">Ask me anything and I'll help you with intelligent responses.</p>
               </div>
-            )}
+            </div>
+          )}
+        </div>
 
-            {/* Quick Tips */}
-            <div className="bg-gray-900/50 rounded-2xl border border-gray-800 p-6">
-              <h3 className="text-lg font-semibold mb-4 flex items-center">
-                <span className="text-lime-green mr-2">💡</span>
-                Quick Tips
-              </h3>
-              <ul className="space-y-3 text-sm text-gray-300">
-                <li className="flex items-start space-x-2">
-                  <span className="text-electric-blue mt-1">•</span>
-                  <span>Be specific about your goal and target audience</span>
-                </li>
-                <li className="flex items-start space-x-2">
-                  <span className="text-neon-purple mt-1">•</span>
-                  <span>Enable Agentic AI for complex, multi-step tasks</span>
-                </li>
-                <li className="flex items-start space-x-2">
-                  <span className="text-lime-green mt-1">•</span>
-                  <span>Choose the right tone for your brand voice</span>
-                </li>
-                <li className="flex items-start space-x-2">
-                  <span className="text-electric-blue mt-1">•</span>
-                  <span>Select your role for personalized prompts</span>
-                </li>
-              </ul>
+        {/* Input Area */}
+        <div className="border-t border-gray-800 p-6">
+          <div className="max-w-4xl mx-auto">
+            {/* Configuration Selectors */}
+            <div className="flex gap-2 mb-4 flex-wrap relative">
+              {/* Role Selector */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowRoleSelector(!showRoleSelector)}
+                  className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors"
+                >
+                  {roleOptions.find(r => r.value === selectedRole)?.label} ▼
+                </button>
+                {showRoleSelector && (
+                  <div className="absolute bottom-full mb-2 left-0 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10 min-w-64">
+                    {roleOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          setSelectedRole(option.value as Role);
+                          setShowRoleSelector(false);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-gray-700 transition-colors flex items-center justify-between"
+                      >
+                        <div>
+                          <div className="font-medium">{option.label}</div>
+                          <div className="text-xs text-gray-400">{option.desc}</div>
+                        </div>
+                        {selectedRole === option.value && <span>✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Tuning Options */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowTuningSelector(!showTuningSelector)}
+                  className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors"
+                >
+                  {tuningOptions.find(t => t.value === tuningOption)?.label} ▼
+                </button>
+                {showTuningSelector && (
+                  <div className="absolute bottom-full mb-2 left-0 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10 min-w-64">
+                    {tuningOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          setTuningOption(option.value as TuningOption);
+                          setShowTuningSelector(false);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-gray-700 transition-colors flex items-center justify-between"
+                      >
+                        <div>
+                          <div className="font-medium">{option.label}</div>
+                          <div className="text-xs text-gray-400">{option.desc}</div>
+                        </div>
+                        {tuningOption === option.value && <span>✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Output Format */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowFormatSelector(!showFormatSelector)}
+                  className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors"
+                >
+                  {formatOptions.find(f => f.value === outputFormat)?.label} ▼
+                </button>
+                {showFormatSelector && (
+                  <div className="absolute bottom-full mb-2 left-0 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10 min-w-64">
+                    {formatOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          setOutputFormat(option.value as OutputFormat);
+                          setShowFormatSelector(false);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-gray-700 transition-colors flex items-center justify-between"
+                      >
+                        <div>
+                          <div className="font-medium">{option.label}</div>
+                          <div className="text-xs text-gray-400">{option.desc}</div>
+                        </div>
+                        {outputFormat === option.value && <span>✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Response Length */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowLengthSelector(!showLengthSelector)}
+                  className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors"
+                >
+                  {lengthOptions.find(l => l.value === responseLength)?.label} ▼
+                </button>
+                {showLengthSelector && (
+                  <div className="absolute bottom-full mb-2 left-0 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10 min-w-64">
+                    {lengthOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          setResponseLength(option.value as ResponseLength);
+                          setShowLengthSelector(false);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-gray-700 transition-colors flex items-center justify-between"
+                      >
+                        <div>
+                          <div className="font-medium">{option.label}</div>
+                          <div className="text-xs text-gray-400">{option.desc}</div>
+                        </div>
+                        {responseLength === option.value && <span>✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Recent History */}
-            {history.length > 0 && (
-              <div className="bg-gray-900/50 rounded-2xl border border-gray-800 p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  <span className="text-neon-purple mr-2">📝</span>
-                  Recent Prompts
-                </h3>
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {history.slice(0, 5).map((item) => (
-                    <div
-                      key={item.id}
-                      className="bg-gray-800 rounded-lg p-3 cursor-pointer hover:bg-gray-700 transition-colors"
-                      onClick={() => setGeneratedPrompt(item)}
-                    >
-                      <p className="text-sm text-gray-300 line-clamp-2">
-                        {item.prompt.substring(0, 100)}...
-                      </p>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {item.timestamp.toLocaleTimeString()}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+            {/* Message Input */}
+            <div className="flex gap-3 items-end">
+              <div className="flex-1 relative">
+                <textarea
+                  ref={inputRef}
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Type your message..."
+                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none min-h-[50px] max-h-32"
+                  rows={1}
+                  disabled={isGenerating}
+                />
+                {inputValue && (
+                  <div className="absolute right-3 bottom-3 text-xs text-gray-400">
+                    {inputValue.length} chars
+                  </div>
+                )}
               </div>
-            )}
+              <button
+                onClick={handleSendMessage}
+                disabled={!inputValue.trim() || isGenerating}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white p-3 rounded-xl transition-colors flex items-center justify-center min-w-[50px]"
+              >
+                {isGenerating ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                ) : (
+                  <span className="text-lg">→</span>
+                )}
+              </button>
+            </div>
+
+            <div className="text-xs text-gray-500 mt-2 text-center">
+              Press Enter to send, Shift+Enter for new line
+            </div>
           </div>
         </div>
       </div>

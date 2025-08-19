@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import Groq from 'groq-sdk'
+import { OpenRouterClient } from './openrouter'
 
 // Initialize AI clients
 const gemini = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
@@ -7,7 +8,15 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY!,
 })
 
-export type AIModel = 'gemini' | 'groq'
+// Initialize OpenRouter client
+const openRouter = new OpenRouterClient({
+  apiKey: process.env.OPENROUTER_API_KEY!,
+  siteUrl: process.env.SITE_URL,
+  siteName: 'Promptly',
+  defaultModel: process.env.OPENROUTER_DEFAULT_MODEL || 'openai/gpt-4o',
+})
+
+export type AIModel = 'gemini' | 'groq' | 'openrouter'
 export type ToneType = 'professional' | 'friendly' | 'creative'
 export type RoleType = 'developer' | 'marketer' | 'founder' | 'freelancer' | 'legal'
 
@@ -18,6 +27,7 @@ export interface PromptRequest {
   role: RoleType
   agentMode: boolean
   language: string
+  openRouterModel?: string // Optional specific model for OpenRouter
 }
 
 export interface PromptResponse {
@@ -25,6 +35,11 @@ export interface PromptResponse {
   model: AIModel
   processingTime: number
   agentSteps?: string[]
+  usage?: {
+    prompt_tokens?: number
+    completion_tokens?: number
+    total_tokens?: number
+  }
 }
 
 // Tone modifiers
@@ -47,7 +62,16 @@ const roleContexts = {
 const languageInstructions = {
   en: 'Respond in English.',
   es: 'Responde en español.',
-  fr: 'Répondez en français.'
+  fr: 'Répondez en français.',
+  de: 'Antworten Sie auf Deutsch.',
+  it: 'Rispondi in italiano.',
+  pt: 'Responda em português.',
+  zh: '用中文回答。',
+  ja: '日本語で回答してください。',
+  ko: '한국어로 답변해주세요.',
+  hi: 'हिंदी में जवाब दें।',
+  ar: 'الرجاء الرد باللغة العربية.',
+  ru: 'Ответьте на русском языке.'
 }
 
 // Build enhanced prompt
@@ -145,6 +169,60 @@ export async function callGroq(request: PromptRequest): Promise<PromptResponse> 
   }
 }
 
+// OpenRouter API call
+export async function callOpenRouter(request: PromptRequest): Promise<PromptResponse> {
+  const startTime = Date.now()
+  
+  try {
+    const prompt = request.agentMode ? buildAgentPrompt(request) : buildEnhancedPrompt(request)
+    const systemPrompt = request.agentMode 
+      ? 'You are an advanced AI assistant with multi-step reasoning capabilities.'
+      : `You are an advanced "Prompt Refinement Assistant".  
+Your task is to take any rough, vague, or incomplete prompt from the user and rewrite it into a **clear, structured, detailed, and effective prompt** that can be used with AI models (such as GPT, Claude, Gemini, Mistral, etc.).  
+
+## Rules:
+1. Never answer the prompt yourself — only rewrite/refine it.
+2. Always avoid hallucinations, assumptions, or adding information that was not provided by the user.
+3. If the user's request is unclear, reformulate it into a more specific and context-rich version while staying true to their intent.
+4. The rewritten prompt must:
+   - Clearly state the **role** the AI should take (e.g., "Act as a data scientist…", "You are a travel guide…").
+   - Specify the **task or goal** (e.g., "Generate ideas for…", "Explain step-by-step…").
+   - Provide necessary **constraints or style requirements** (e.g., tone: formal/casual, output format: table, list, code, etc.).
+   - Ask the AI to **clarify missing details** if necessary rather than making them up.
+5. Do not add irrelevant content or fictional facts.
+6. Keep the rewritten prompt **concise but powerful**, optimized for high-quality outputs.
+
+## Output Format:
+Always respond in the following structure:
+---
+**Refined Prompt:**
+[Final polished prompt here]
+
+**Notes:**
+- [Mention any assumptions you avoided]
+- [Mention if user input was vague and how you refined it]`
+    
+    const result = await openRouter.generateCompletion({
+      prompt,
+      model: request.openRouterModel,
+      systemPrompt,
+      temperature: 0.7,
+      maxTokens: 2048,
+    })
+    
+    return {
+      response: result.response,
+      model: 'openrouter',
+      processingTime: result.processingTime,
+      agentSteps: request.agentMode ? extractAgentSteps(result.response) : undefined,
+      usage: result.usage
+    }
+  } catch (error) {
+    console.error('OpenRouter API error:', error)
+    throw new Error('Failed to generate response with OpenRouter')
+  }
+}
+
 // Extract agent steps from response
 function extractAgentSteps(response: string): string[] {
   const steps: string[] = []
@@ -166,6 +244,8 @@ export async function generatePromptResponse(request: PromptRequest): Promise<Pr
       return await callGemini(request)
     case 'groq':
       return await callGroq(request)
+    case 'openrouter':
+      return await callOpenRouter(request)
     default:
       throw new Error(`Unsupported model: ${request.model}`)
   }
