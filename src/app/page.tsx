@@ -8,6 +8,8 @@ import { initScrollAnimations, initParallaxEffect, initSmoothScroll, initTypingA
 import { SectionSkeleton } from '@/components/sections';
 import { LoaderThreeDemo } from '@/components/LoaderThreeDemo';
 import { SpotlightNewDemo } from '@/components/SpotlightNewDemo';
+import ScrollFloat from '@/components/ScrollFloat';
+import ScrollReveal from '@/components/ScrollReveal';
 
 // Lazy load components for better performance
 import dynamic from 'next/dynamic';
@@ -117,7 +119,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-x-hidden relative grid-background">
+    <div className="min-h-screen bg-black text-white overflow-x-hidden relative" style={{backgroundColor: '#000000'}}>
 
       
       {/* Glassmorphic Navigation */}
@@ -167,29 +169,56 @@ export default function Home() {
       {/* Content Sections */}
       <div>
         {/* Features Section */}
-        <Suspense fallback={<SectionSkeleton />}>
-          <FeaturesSection visibleElements={visibleElements} />
-        </Suspense>
+        <ScrollReveal delay={0.2} y={60}>
+          <Suspense fallback={<SectionSkeleton />}>
+            <FeaturesSection />
+          </Suspense>
+        </ScrollReveal>
 
         {/* How It Works Section */}
-        <Suspense fallback={<SectionSkeleton />}>
-          <HowItWorksSection visibleElements={visibleElements} />
-        </Suspense>
+        <ScrollReveal delay={0.3} y={80}>
+          <Suspense fallback={<SectionSkeleton />}>
+            <HowItWorksSection visibleElements={visibleElements} />
+          </Suspense>
+        </ScrollReveal>
 
         {/* Agent Mode Section */}
-        <Suspense fallback={<SectionSkeleton />}>
-          <AgentModeSection visibleElements={visibleElements} />
-        </Suspense>
+        <ScrollReveal delay={0.4} y={100}>
+          <Suspense fallback={<SectionSkeleton />}>
+            <AgentModeSection visibleElements={visibleElements} />
+          </Suspense>
+        </ScrollReveal>
 
         {/* Multilingual Section */}
-        <Suspense fallback={<SectionSkeleton />}>
-          <MultilingualSection visibleElements={visibleElements} />
-        </Suspense>
+        <ScrollReveal delay={0.5} y={120}>
+          <Suspense fallback={<SectionSkeleton />}>
+            <MultilingualSection visibleElements={visibleElements} />
+          </Suspense>
+        </ScrollReveal>
+
+        {/* Scroll Float Effect */}
+        <ScrollReveal delay={0.6} y={150}>
+          <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: '#000000'}}>
+            <ScrollFloat
+               animationDuration={1}
+               ease="back.inOut(2)"
+               scrollStart="center bottom+=50%"
+               scrollEnd="bottom bottom-=40%"
+               stagger={0.03}
+               containerClassName="text-center"
+               textClassName="font-black text-white"
+             >
+               React Bits
+             </ScrollFloat>
+          </div>
+        </ScrollReveal>
 
         {/* CTA Section */}
-        <Suspense fallback={<SectionSkeleton />}>
-          <CTASection visibleElements={visibleElements} />
-        </Suspense>
+        <ScrollReveal delay={0.7} y={80}>
+          <Suspense fallback={<SectionSkeleton />}>
+            <CTASection visibleElements={visibleElements} />
+          </Suspense>
+        </ScrollReveal>
       </div>
 
       {/* Spotlight Footer */}

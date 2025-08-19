@@ -85,8 +85,11 @@ const content = [
 
 export function StickyScrollRevealDemo() {
   return (
-    <div className="w-full py-20">
-      <StickyScroll content={content} />
+    <div className="min-h-screen w-full relative overflow-hidden" style={{backgroundColor: '#000000'}}>
+      {/* Content */}
+      <div className="relative z-10 min-h-screen">
+        <StickyScroll content={content} />
+      </div>
     </div>
   );
 }
