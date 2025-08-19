@@ -10,6 +10,7 @@ import { LoaderThreeDemo } from '@/components/LoaderThreeDemo';
 import { SpotlightNewDemo } from '@/components/SpotlightNewDemo';
 import ScrollFloat from '@/components/ScrollFloat';
 import ScrollReveal from '@/components/ScrollReveal';
+import '@/components/GlassSurface.css';
 
 // Lazy load components for better performance
 import dynamic from 'next/dynamic';
@@ -208,7 +209,7 @@ export default function Home() {
                containerClassName="text-center"
                textClassName="font-black text-white"
              >
-               React Bits
+              Try Promptly now!
              </ScrollFloat>
           </div>
         </ScrollReveal>
