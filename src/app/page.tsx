@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/Button"
 import { ArrowRight, Zap, Brain, Globe, Clock, Palette, BarChart3, CheckCircle, Star, Users, TrendingUp, Award, Sparkles, Rocket, Target } from "lucide-react"
 import { initScrollAnimations, initParallaxEffect, initSmoothScroll, initTypingAnimation, initCounterAnimation, initFloatingParticles } from '@/lib/animations.js';
 import { SectionSkeleton } from '@/components/sections';
-import AnimatedFooter from '@/components/AnimatedFooter';
+import { LoaderThreeDemo } from '@/components/LoaderThreeDemo';
+import { SpotlightNewDemo } from '@/components/SpotlightNewDemo';
 
 // Lazy load components for better performance
 import dynamic from 'next/dynamic';
@@ -16,7 +17,7 @@ const HeroSection = dynamic(() => import('@/components/sections/HeroSection'), {
   ssr: true
 });
 
-const FeaturesSection = dynamic(() => import('@/components/sections/FeaturesSection'), {
+const FeaturesSection = dynamic(() => import('@/components/StickyScrollRevealDemo').then(mod => ({ default: mod.StickyScrollRevealDemo })), {
   loading: () => <SectionSkeleton />,
   ssr: false
 });
@@ -46,9 +47,15 @@ export default function Home() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [visibleElements, setVisibleElements] = useState<Set<string>>(new Set());
   const [isClient, setIsClient] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setIsClient(true);
+    
+    // Hide loading screen after 3 seconds
+    const loadingTimer = setTimeout(() => {
+      setIsLoading(false);
+    }, 3000);
     
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -82,22 +89,32 @@ export default function Home() {
     window.addEventListener('scroll', handleScroll);
     window.addEventListener('mousemove', handleMouseMove);
     
-    if (isClient) {
-      initScrollAnimations();
-      initParallaxEffect();
-      initSmoothScroll();
-      initTypingAnimation();
-      initCounterAnimation();
-      initFloatingParticles();
-    }
+    // Initialize animations after loading timer
+    const animationTimer = setTimeout(() => {
+      if (isClient) {
+        initScrollAnimations();
+        initParallaxEffect();
+        initSmoothScroll();
+        initTypingAnimation();
+        initCounterAnimation();
+        initFloatingParticles();
+      }
+    }, 3100);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('mousemove', handleMouseMove);
       observer.disconnect();
       clearTimeout(timeoutId);
+      clearTimeout(loadingTimer);
+      clearTimeout(animationTimer);
     };
   }, []);
+
+  // Show loading screen
+  if (isLoading) {
+    return <LoaderThreeDemo />;
+  }
 
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden relative grid-background">
@@ -175,8 +192,8 @@ export default function Home() {
         </Suspense>
       </div>
 
-      {/* Animated Footer */}
-      <AnimatedFooter />
+      {/* Spotlight Footer */}
+      <SpotlightNewDemo />
     </div>
   );
 }
