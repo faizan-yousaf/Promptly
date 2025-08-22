@@ -2,6 +2,25 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import Navigation from '@/components/Navigation';
+import { 
+  Send, 
+  Plus, 
+  Trash2, 
+  Download, 
+  Settings, 
+  MessageSquare, 
+  Sparkles,
+  Bot,
+  User,
+  ChevronDown,
+  Zap,
+  Code,
+  FileText,
+  Brain,
+  Globe,
+  Palette
+} from 'lucide-react';
 
 type Role = 'developer' | 'marketer' | 'writer' | 'researcher' | 'entrepreneur' | 'student';
 type OutputFormat = 'text' | 'json';
@@ -219,353 +238,347 @@ export default function Dashboard() {
   };
 
   const roleOptions = [
-    { value: 'developer', label: '👨‍💻 Developer', desc: 'Technical solutions & code' },
-    { value: 'marketer', label: '📈 Marketer', desc: 'Marketing strategies & campaigns' },
-    { value: 'writer', label: '✍️ Writer', desc: 'Content creation & editing' },
-    { value: 'researcher', label: '🔬 Researcher', desc: 'Analysis & investigation' },
-    { value: 'entrepreneur', label: '🚀 Entrepreneur', desc: 'Business & startup advice' },
-    { value: 'student', label: '🎓 Student', desc: 'Learning & education' },
+    { value: 'developer', label: 'Developer', icon: Code, desc: 'Technical solutions & code' },
+    { value: 'marketer', label: 'Marketer', icon: Zap, desc: 'Marketing strategies & campaigns' },
+    { value: 'writer', label: 'Writer', icon: FileText, desc: 'Content creation & editing' },
+    { value: 'researcher', label: 'Researcher', icon: Brain, desc: 'Analysis & investigation' },
+    { value: 'entrepreneur', label: 'Entrepreneur', icon: Sparkles, desc: 'Business & startup advice' },
+    { value: 'student', label: 'Student', icon: MessageSquare, desc: 'Learning & education' },
   ];
 
   const formatOptions = [
-    { value: 'text', label: '📝 Text', desc: 'Plain text response' },
-    { value: 'json', label: '⚡ JSON', desc: 'Structured JSON format' },
+    { value: 'text', label: 'Text', icon: FileText, desc: 'Plain text response' },
+    { value: 'json', label: 'JSON', icon: Code, desc: 'Structured JSON format' },
   ];
 
   const lengthOptions = [
-    { value: 'short', label: '⚡ Short', desc: 'Brief & concise' },
-    { value: 'medium', label: '📄 Medium', desc: 'Balanced detail' },
-    { value: 'long', label: '📚 Long', desc: 'Comprehensive & detailed' },
+    { value: 'short', label: 'Short', icon: Zap, desc: 'Brief & concise' },
+    { value: 'medium', label: 'Medium', icon: FileText, desc: 'Balanced detail' },
+    { value: 'long', label: 'Long', icon: MessageSquare, desc: 'Comprehensive & detailed' },
   ];
 
   const tuningOptions = [
-    { value: 'creative', label: '🎨 Creative', desc: 'Innovative & original' },
-    { value: 'balanced', label: '⚖️ Balanced', desc: 'Practical & reliable' },
-    { value: 'precise', label: '🎯 Precise', desc: 'Accurate & focused' },
+    { value: 'creative', label: 'Creative', icon: Sparkles, desc: 'Innovative & original' },
+    { value: 'balanced', label: 'Balanced', icon: Palette, desc: 'Practical & reliable' },
+    { value: 'precise', label: 'Precise', icon: Brain, desc: 'Accurate & focused' },
   ];
 
-  return (
-    <div className="flex h-screen bg-black text-white">
-      {/* Sidebar */}
-      <div className={`bg-gray-900 border-r border-gray-800 transition-all duration-300 ${
-        sidebarOpen ? 'w-80' : 'w-16'
-      }`}>
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="p-4 border-b border-gray-800">
-            <div className="flex items-center justify-between">
-              {sidebarOpen && (
-                <Link href="/" className="text-xl font-bold">
-                  <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                    Promptly
-                  </span>
-                </Link>
-              )}
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
-              >
-                {sidebarOpen ? '←' : '→'}
-              </button>
-            </div>
-            {sidebarOpen && (
-              <button
-                onClick={createNewSession}
-                className="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-              >
-                <span>➕</span> New Chat
-              </button>
-            )}
-          </div>
+  const getCurrentOption = (type: string) => {
+    switch (type) {
+      case 'role':
+        return roleOptions.find(opt => opt.value === selectedRole);
+      case 'format':
+        return formatOptions.find(opt => opt.value === outputFormat);
+      case 'length':
+        return lengthOptions.find(opt => opt.value === responseLength);
+      case 'tuning':
+        return tuningOptions.find(opt => opt.value === tuningOption);
+      default:
+        return null;
+    }
+  };
 
-          {/* Chat History */}
-          {sidebarOpen && (
-            <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              {chatSessions.length === 0 ? (
-                <div className="text-gray-500 text-sm text-center py-8">
-                  No conversations yet
-                </div>
-              ) : (
-                chatSessions.map((session) => (
-                  <div
-                    key={session.id}
-                    className={`group p-3 rounded-lg cursor-pointer transition-colors ${
-                      currentSession?.id === session.id
-                        ? 'bg-blue-600/20 border border-blue-600/30'
-                        : 'hover:bg-gray-800'
-                    }`}
-                    onClick={() => setCurrentSession(session)}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">
-                          {session.title}
+  return (
+    <div className="min-h-screen bg-black text-white">
+      <Navigation currentPage="dashboard" />
+      
+      <div className="flex h-screen pt-20">
+        {/* Sidebar */}
+        <div className={`bg-white/5 backdrop-blur-sm border-r border-white/10 transition-all duration-300 ${
+          sidebarOpen ? 'w-80' : 'w-20'
+        }`}>
+          <div className="flex flex-col h-full">
+            {/* Header */}
+            <div className="p-4 border-b border-white/10">
+              <div className="flex items-center justify-between">
+                {sidebarOpen && (
+                  <Link href="/" className="text-xl font-bold">
+                    <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                      Promptly
+                    </span>
+                  </Link>
+                )}
+                <button
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  {sidebarOpen ? '←' : '→'}
+                </button>
+              </div>
+              {sidebarOpen && (
+                <button
+                  onClick={createNewSession}
+                  className="w-full mt-3 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-black py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 font-semibold"
+                >
+                  <Plus className="w-4 h-4" />
+                  New Chat
+                </button>
+              )}
+            </div>
+
+            {/* Chat History */}
+            {sidebarOpen && (
+              <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                {chatSessions.length === 0 ? (
+                  <div className="text-white/40 text-sm text-center py-8">
+                    No conversations yet
+                  </div>
+                ) : (
+                  chatSessions.map((session) => (
+                    <div
+                      key={session.id}
+                      className={`group p-3 rounded-lg cursor-pointer transition-all duration-200 ${
+                        currentSession?.id === session.id
+                          ? 'bg-gradient-to-r from-cyan-400/20 to-blue-500/20 border border-cyan-400/30'
+                          : 'hover:bg-white/10'
+                      }`}
+                      onClick={() => setCurrentSession(session)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-white truncate">
+                            {session.title}
+                          </div>
+                          <div className="text-xs text-white/60 mt-1">
+                            {session.lastMessage.toLocaleDateString()}
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-400 mt-1">
-                          {session.lastMessage.toLocaleDateString()}
-                        </div>
-                      </div>
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            exportChat(session);
-                          }}
-                          className="p-1 hover:bg-gray-700 rounded text-xs"
-                          title="Export"
-                        >
-                          📥
-                        </button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             deleteSession(session.id);
                           }}
-                          className="p-1 hover:bg-red-600 rounded text-xs"
-                          title="Delete"
+                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded transition-all duration-200"
                         >
-                          🗑️
+                          <Trash2 className="w-4 h-4 text-white/60 hover:text-red-400" />
                         </button>
                       </div>
                     </div>
-                  </div>
-                ))
-              )}
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Main Chat Area */}
+        <div className="flex-1 flex flex-col">
+          {/* Chat Header */}
+          {currentSession && (
+            <div className="bg-white/5 backdrop-blur-sm border-b border-white/10 p-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-white">{currentSession.title}</h2>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => exportChat(currentSession)}
+                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                    title="Export Chat"
+                  >
+                    <Download className="w-4 h-4 text-white/60" />
+                  </button>
+                  <button
+                    onClick={() => deleteSession(currentSession.id)}
+                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                    title="Delete Chat"
+                  >
+                    <Trash2 className="w-4 h-4 text-white/60" />
+                  </button>
+                </div>
+              </div>
             </div>
           )}
-        </div>
-      </div>
 
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Navigation */}
-        <nav className="border-b border-gray-800 bg-black/95 backdrop-blur-sm p-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span className="text-sm text-gray-400">
-                {currentSession ? currentSession.title : 'Select a chat or start a new one'}
-              </span>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-xs text-gray-500">Powered by OpenAI via OpenRouter</span>
-              <Link href="/pricing" className="text-gray-300 hover:text-white transition-colors">
-                Pricing
-              </Link>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors">
-                Profile
-              </button>
-            </div>
-          </div>
-        </nav>
-
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-6">
-          {currentSession && currentSession.messages.length > 0 ? (
-            <div className="max-w-4xl mx-auto space-y-6">
-              {currentSession.messages.map((message) => (
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-6">
+            {currentSession?.messages.length === 0 ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-cyan-400/20 to-blue-500/20 rounded-2xl flex items-center justify-center">
+                    <Bot className="w-8 h-8 text-cyan-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2 text-white">Welcome to Promptly</h3>
+                  <p className="text-white/60 mb-6 max-w-md">
+                    Start a conversation by typing your message below. I'll help you create perfect prompts for any task.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              currentSession?.messages.map((message) => (
                 <div
                   key={message.id}
                   className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div
-                    className={`max-w-3xl p-4 rounded-2xl ${
+                  <div className={`flex items-start space-x-3 max-w-3xl ${message.isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      message.isUser 
+                        ? 'bg-gradient-to-r from-cyan-400 to-blue-500' 
+                        : 'bg-gradient-to-r from-purple-400 to-pink-500'
+                    }`}>
+                      {message.isUser ? (
+                        <User className="w-4 h-4 text-black" />
+                      ) : (
+                        <Bot className="w-4 h-4 text-black" />
+                      )}
+                    </div>
+                    <div className={`rounded-2xl px-4 py-3 ${
                       message.isUser
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-800 text-gray-100'
-                    }`}
-                  >
-                    <div className="whitespace-pre-wrap">{message.content}</div>
-                    <div className="text-xs opacity-70 mt-2">
-                      {message.timestamp.toLocaleTimeString()}
+                        ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-black'
+                        : 'bg-white/10 backdrop-blur-sm border border-white/10 text-white'
+                    }`}>
+                      <div className="whitespace-pre-wrap">{message.content}</div>
+                      <div className={`text-xs mt-2 ${
+                        message.isUser ? 'text-black/60' : 'text-white/40'
+                      }`}>
+                        {message.timestamp.toLocaleTimeString()}
+                      </div>
                     </div>
                   </div>
                 </div>
-              ))}
-              {isTyping && (
-                <div className="flex justify-start">
-                  <div className="bg-gray-800 p-4 rounded-2xl">
-                    <div className="flex space-x-2">
-                      <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              ))
+            )}
+            {isTyping && (
+              <div className="flex justify-start">
+                <div className="flex items-start space-x-3 max-w-3xl">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center">
+                    <Bot className="w-4 h-4 text-black" />
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl px-4 py-3">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
                 </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-          ) : (
-            <div className="h-full flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-6xl mb-4">💬</div>
-                <h2 className="text-2xl font-bold mb-2">Start a Conversation</h2>
-                <p className="text-gray-400">Ask me anything and I'll help you with intelligent responses.</p>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
 
-        {/* Input Area */}
-        <div className="border-t border-gray-800 p-6">
-          <div className="max-w-4xl mx-auto">
-            {/* Configuration Selectors */}
-            <div className="flex gap-2 mb-4 flex-wrap relative">
-              {/* Role Selector */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowRoleSelector(!showRoleSelector)}
-                  className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors"
-                >
-                  {roleOptions.find(r => r.value === selectedRole)?.label} ▼
-                </button>
-                {showRoleSelector && (
-                  <div className="absolute bottom-full mb-2 left-0 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10 min-w-64">
-                    {roleOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => {
-                          setSelectedRole(option.value as Role);
-                          setShowRoleSelector(false);
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-700 transition-colors flex items-center justify-between"
-                      >
-                        <div>
-                          <div className="font-medium">{option.label}</div>
-                          <div className="text-xs text-gray-400">{option.desc}</div>
-                        </div>
-                        {selectedRole === option.value && <span>✓</span>}
-                      </button>
-                    ))}
+          {/* Configuration Panel */}
+          <div className="bg-white/5 backdrop-blur-sm border-t border-white/10 p-4">
+            <div className="flex items-center space-x-4 mb-4">
+              {[
+                { type: 'role', label: 'Role', icon: User },
+                { type: 'format', label: 'Format', icon: FileText },
+                { type: 'length', label: 'Length', icon: MessageSquare },
+                { type: 'tuning', label: 'Tuning', icon: Palette },
+              ].map((config) => {
+                const current = getCurrentOption(config.type);
+                return (
+                  <div key={config.type} className="relative">
+                    <button
+                      onClick={() => {
+                        setShowRoleSelector(config.type === 'role' ? !showRoleSelector : false);
+                        setShowFormatSelector(config.type === 'format' ? !showFormatSelector : false);
+                        setShowLengthSelector(config.type === 'length' ? !showLengthSelector : false);
+                        setShowTuningSelector(config.type === 'tuning' ? !showTuningSelector : false);
+                      }}
+                      className="flex items-center space-x-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+                    >
+                      <config.icon className="w-4 h-4 text-white/60" />
+                      <span className="text-sm text-white">{current?.label}</span>
+                      <ChevronDown className="w-4 h-4 text-white/60" />
+                    </button>
+                    
+                    {/* Dropdown */}
+                    {((config.type === 'role' && showRoleSelector) ||
+                      (config.type === 'format' && showFormatSelector) ||
+                      (config.type === 'length' && showLengthSelector) ||
+                      (config.type === 'tuning' && showTuningSelector)) && (
+                      <div className="absolute bottom-full left-0 mb-2 w-64 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-2 z-10">
+                        {config.type === 'role' && roleOptions.map((option) => (
+                          <button
+                            key={option.value}
+                            onClick={() => {
+                              setSelectedRole(option.value as Role);
+                              setShowRoleSelector(false);
+                            }}
+                            className="w-full flex items-center space-x-3 p-2 hover:bg-white/10 rounded-lg transition-colors text-left"
+                          >
+                            <option.icon className="w-4 h-4 text-white/60" />
+                            <div>
+                              <div className="text-sm text-white">{option.label}</div>
+                              <div className="text-xs text-white/60">{option.desc}</div>
+                            </div>
+                          </button>
+                        ))}
+                        {config.type === 'format' && formatOptions.map((option) => (
+                          <button
+                            key={option.value}
+                            onClick={() => {
+                              setOutputFormat(option.value as OutputFormat);
+                              setShowFormatSelector(false);
+                            }}
+                            className="w-full flex items-center space-x-3 p-2 hover:bg-white/10 rounded-lg transition-colors text-left"
+                          >
+                            <option.icon className="w-4 h-4 text-white/60" />
+                            <div>
+                              <div className="text-sm text-white">{option.label}</div>
+                              <div className="text-xs text-white/60">{option.desc}</div>
+                            </div>
+                          </button>
+                        ))}
+                        {config.type === 'length' && lengthOptions.map((option) => (
+                          <button
+                            key={option.value}
+                            onClick={() => {
+                              setResponseLength(option.value as ResponseLength);
+                              setShowLengthSelector(false);
+                            }}
+                            className="w-full flex items-center space-x-3 p-2 hover:bg-white/10 rounded-lg transition-colors text-left"
+                          >
+                            <option.icon className="w-4 h-4 text-white/60" />
+                            <div>
+                              <div className="text-sm text-white">{option.label}</div>
+                              <div className="text-xs text-white/60">{option.desc}</div>
+                            </div>
+                          </button>
+                        ))}
+                        {config.type === 'tuning' && tuningOptions.map((option) => (
+                          <button
+                            key={option.value}
+                            onClick={() => {
+                              setTuningOption(option.value as TuningOption);
+                              setShowTuningSelector(false);
+                            }}
+                            className="w-full flex items-center space-x-3 p-2 hover:bg-white/10 rounded-lg transition-colors text-left"
+                          >
+                            <option.icon className="w-4 h-4 text-white/60" />
+                            <div>
+                              <div className="text-sm text-white">{option.label}</div>
+                              <div className="text-xs text-white/60">{option.desc}</div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-
-              {/* Tuning Options */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowTuningSelector(!showTuningSelector)}
-                  className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors"
-                >
-                  {tuningOptions.find(t => t.value === tuningOption)?.label} ▼
-                </button>
-                {showTuningSelector && (
-                  <div className="absolute bottom-full mb-2 left-0 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10 min-w-64">
-                    {tuningOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => {
-                          setTuningOption(option.value as TuningOption);
-                          setShowTuningSelector(false);
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-700 transition-colors flex items-center justify-between"
-                      >
-                        <div>
-                          <div className="font-medium">{option.label}</div>
-                          <div className="text-xs text-gray-400">{option.desc}</div>
-                        </div>
-                        {tuningOption === option.value && <span>✓</span>}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Output Format */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowFormatSelector(!showFormatSelector)}
-                  className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors"
-                >
-                  {formatOptions.find(f => f.value === outputFormat)?.label} ▼
-                </button>
-                {showFormatSelector && (
-                  <div className="absolute bottom-full mb-2 left-0 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10 min-w-64">
-                    {formatOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => {
-                          setOutputFormat(option.value as OutputFormat);
-                          setShowFormatSelector(false);
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-700 transition-colors flex items-center justify-between"
-                      >
-                        <div>
-                          <div className="font-medium">{option.label}</div>
-                          <div className="text-xs text-gray-400">{option.desc}</div>
-                        </div>
-                        {outputFormat === option.value && <span>✓</span>}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Response Length */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowLengthSelector(!showLengthSelector)}
-                  className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors"
-                >
-                  {lengthOptions.find(l => l.value === responseLength)?.label} ▼
-                </button>
-                {showLengthSelector && (
-                  <div className="absolute bottom-full mb-2 left-0 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10 min-w-64">
-                    {lengthOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => {
-                          setResponseLength(option.value as ResponseLength);
-                          setShowLengthSelector(false);
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-700 transition-colors flex items-center justify-between"
-                      >
-                        <div>
-                          <div className="font-medium">{option.label}</div>
-                          <div className="text-xs text-gray-400">{option.desc}</div>
-                        </div>
-                        {responseLength === option.value && <span>✓</span>}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+                );
+              })}
             </div>
 
-            {/* Message Input */}
-            <div className="flex gap-3 items-end">
-              <div className="flex-1 relative">
+            {/* Input Area */}
+            <div className="flex items-end space-x-4">
+              <div className="flex-1">
                 <textarea
                   ref={inputRef}
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Type your message..."
-                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none min-h-[50px] max-h-32"
+                  placeholder="Describe what you need help with..."
+                  className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/40 resize-none focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-transparent"
                   rows={1}
-                  disabled={isGenerating}
+                  style={{ minHeight: '48px', maxHeight: '120px' }}
                 />
-                {inputValue && (
-                  <div className="absolute right-3 bottom-3 text-xs text-gray-400">
-                    {inputValue.length} chars
-                  </div>
-                )}
               </div>
               <button
                 onClick={handleSendMessage}
                 disabled={!inputValue.trim() || isGenerating}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white p-3 rounded-xl transition-colors flex items-center justify-center min-w-[50px]"
+                className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 disabled:from-gray-500 disabled:to-gray-600 text-black p-3 rounded-xl transition-all duration-200 disabled:cursor-not-allowed"
               >
-                {isGenerating ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                ) : (
-                  <span className="text-lg">→</span>
-                )}
+                <Send className="w-5 h-5" />
               </button>
-            </div>
-
-            <div className="text-xs text-gray-500 mt-2 text-center">
-              Press Enter to send, Shift+Enter for new line
             </div>
           </div>
         </div>
