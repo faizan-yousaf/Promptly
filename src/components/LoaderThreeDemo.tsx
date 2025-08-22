@@ -7,7 +7,7 @@ export function LoaderThreeDemo() {
       <div className="text-center">
         <LoaderThree />
         <div className="mt-6">
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-2">
+          <h2 className="text-2xl font-bold text-white mb-2">
             Promptly
           </h2>
           <p className="text-gray-400 text-sm">Loading your AI experience...</p>

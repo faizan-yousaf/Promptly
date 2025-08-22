@@ -50,7 +50,7 @@ const Footer: React.FC = () => {
               <div className="w-8 h-8 bg-gradient-to-r from-[#0ea5e9] to-[#06b6d4] rounded-lg flex items-center justify-center glow-primary">
                 <span className="text-black font-bold text-sm">P</span>
               </div>
-              <span className="text-2xl font-bold gradient-text-primary glow-text-primary">
+              <span className="text-2xl font-bold text-white">
                 Promptly
               </span>
             </Link>

@@ -41,7 +41,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage = 'home' }) => {
             <div className="w-8 h-8 bg-gradient-to-r from-[#0ea5e9] to-[#06b6d4] rounded-lg flex items-center justify-center glow-primary">
               <span className="text-black font-bold text-sm">P</span>
             </div>
-            <span className="text-2xl font-bold gradient-text-primary group-hover:scale-105 transition-transform glow-text-primary">
+            <span className="text-2xl font-bold text-white group-hover:scale-105 transition-transform">
               Promptly
             </span>
           </Link>

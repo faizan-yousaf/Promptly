@@ -44,7 +44,7 @@ export default function About() {
             </div>
             <h1 className="text-5xl md:text-6xl font-bold mb-6">
               About
-              <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent block">
+              <span className="text-white block">
                 Promptly
               </span>
             </h1>

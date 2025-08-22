@@ -119,7 +119,7 @@ const AnimatedFooter = () => {
           {/* Brand Section */}
           <div className="lg:col-span-2">
             <Link href="/" className="inline-block mb-6 group">
-              <span className="text-3xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent group-hover:scale-105 transition-transform duration-300">
+              <span className="text-3xl font-bold text-white group-hover:scale-105 transition-transform duration-300">
                 Promptly
               </span>
             </Link>

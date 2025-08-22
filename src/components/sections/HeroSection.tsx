@@ -29,7 +29,7 @@ export default function HeroSection({ mousePosition }: HeroSectionProps) {
       <div className="relative z-20 text-center max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-4 tracking-tight">
-            <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+            <span className="text-white">
               Promptly
             </span>
           </h1>

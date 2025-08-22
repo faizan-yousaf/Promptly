@@ -21,7 +21,9 @@ import {
   Globe,
   Palette,
   Menu,
-  X
+  X,
+  Share2,
+  MoreVertical
 } from 'lucide-react';
 
 type Role = 'developer' | 'marketer' | 'writer' | 'researcher' | 'entrepreneur' | 'student';
@@ -67,6 +69,7 @@ export default function Dashboard() {
   const [showFormatSelector, setShowFormatSelector] = useState(false);
   const [showLengthSelector, setShowLengthSelector] = useState(false);
   const [showTuningSelector, setShowTuningSelector] = useState(false);
+  const [showChatMenu, setShowChatMenu] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -74,6 +77,23 @@ export default function Dashboard() {
   useEffect(() => {
     scrollToBottom();
   }, [currentSession?.messages]);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.dropdown-container')) {
+        setShowRoleSelector(false);
+        setShowFormatSelector(false);
+        setShowLengthSelector(false);
+        setShowTuningSelector(false);
+        setShowChatMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -233,6 +253,28 @@ export default function Dashboard() {
     URL.revokeObjectURL(url);
   };
 
+  const shareChat = async (session: ChatSession) => {
+    try {
+      const content = session.messages
+        .map(m => `${m.isUser ? 'User' : 'AI'}: ${m.content}`)
+        .join('\n\n');
+      
+      if (navigator.share) {
+        await navigator.share({
+          title: `Chat: ${session.title}`,
+          text: content,
+          url: window.location.href
+        });
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(content);
+        alert('Chat content copied to clipboard!');
+      }
+    } catch (error) {
+      console.error('Error sharing chat:', error);
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -282,7 +324,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
+    <div className="min-h-screen bg-black text-white">
       <Navigation currentPage="dashboard" />
       
       <div className="flex h-screen pt-16">
@@ -295,26 +337,26 @@ export default function Dashboard() {
         )}
 
         {/* Sidebar */}
-        <div className={`fixed lg:static inset-y-0 left-0 z-50 lg:z-auto bg-white border-r border-gray-200 transition-transform duration-300 lg:transition-none ${
+        <div className={`fixed lg:static inset-y-0 left-0 z-50 lg:z-auto bg-black/80 backdrop-blur-xl border-r border-white/10 transition-transform duration-300 lg:transition-none ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         } lg:w-80`}>
           <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="p-4 border-b border-gray-200">
+            <div className="p-4 border-b border-white/10">
               <div className="flex items-center justify-between">
-                <Link href="/" className="text-xl font-bold text-gray-900">
+                <Link href="/" className="text-xl font-bold text-white">
                   Promptly
                 </Link>
                 <button
                   onClick={() => setSidebarOpen(false)}
-                  className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-5 h-5 text-white" />
                 </button>
               </div>
               <button
                 onClick={createNewSession}
-                className="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 font-medium"
+                className="w-full mt-3 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-black py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 font-semibold"
               >
                 <Plus className="w-4 h-4" />
                 New Chat
@@ -324,17 +366,17 @@ export default function Dashboard() {
             {/* Chat History */}
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
               {chatSessions.length === 0 ? (
-                <div className="text-gray-500 text-sm text-center py-8">
+                <div className="text-white/40 text-sm text-center py-8">
                   No conversations yet
                 </div>
               ) : (
                 chatSessions.map((session) => (
                   <div
                     key={session.id}
-                    className={`group p-3 rounded-lg cursor-pointer transition-colors ${
+                    className={`group p-3 rounded-lg cursor-pointer transition-all duration-200 ${
                       currentSession?.id === session.id
-                        ? 'bg-blue-50 border border-blue-200'
-                        : 'hover:bg-gray-100'
+                        ? 'bg-gradient-to-r from-cyan-400/20 to-blue-500/20 border border-cyan-400/30'
+                        : 'hover:bg-white/10'
                     }`}
                     onClick={() => {
                       setCurrentSession(session);
@@ -343,10 +385,10 @@ export default function Dashboard() {
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-gray-900 truncate">
+                        <div className="text-sm font-medium text-white truncate">
                           {session.title}
                         </div>
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-white/60 mt-1">
                           {session.lastMessage.toLocaleDateString()}
                         </div>
                       </div>
@@ -355,9 +397,9 @@ export default function Dashboard() {
                           e.stopPropagation();
                           deleteSession(session.id);
                         }}
-                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 rounded transition-colors"
+                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded transition-colors"
                       >
-                        <Trash2 className="w-4 h-4 text-gray-500 hover:text-red-500" />
+                        <Trash2 className="w-4 h-4 text-white/60 hover:text-red-400" />
                       </button>
                     </div>
                   </div>
@@ -368,52 +410,82 @@ export default function Dashboard() {
         </div>
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col bg-white">
+        <div className="flex-1 flex flex-col bg-black">
           {/* Chat Header */}
-          <div className="border-b border-gray-200 p-4">
+          <div className="border-b border-white/10 p-4 bg-black/80 backdrop-blur-xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setSidebarOpen(true)}
-                  className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
                 >
-                  <Menu className="w-5 h-5" />
+                  <Menu className="w-5 h-5 text-white" />
                 </button>
-                <h2 className="text-lg font-semibold text-gray-900">
+                <h2 className="text-lg font-semibold text-white">
                   {currentSession?.title || 'New Chat'}
                 </h2>
               </div>
               {currentSession && (
                 <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => exportChat(currentSession)}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    title="Export Chat"
-                  >
-                    <Download className="w-4 h-4 text-gray-600" />
-                  </button>
-                  <button
-                    onClick={() => deleteSession(currentSession.id)}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    title="Delete Chat"
-                  >
-                    <Trash2 className="w-4 h-4 text-gray-600" />
-                  </button>
+                  <div className="relative dropdown-container">
+                    <button
+                      onClick={() => setShowChatMenu(!showChatMenu)}
+                      className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                      title="Chat Options"
+                    >
+                      <MoreVertical className="w-4 h-4 text-white/60" />
+                    </button>
+                    
+                    {/* Chat Menu Dropdown */}
+                    {showChatMenu && (
+                      <div className="absolute right-0 top-full mt-2 w-48 bg-black/90 backdrop-blur-xl border border-white/20 rounded-lg shadow-lg p-2 z-10">
+                        <button
+                          onClick={() => {
+                            exportChat(currentSession);
+                            setShowChatMenu(false);
+                          }}
+                          className="w-full flex items-center space-x-3 p-2 hover:bg-white/10 rounded-lg transition-colors text-left"
+                        >
+                          <Download className="w-4 h-4 text-white/60" />
+                          <span className="text-sm text-white">Export Chat</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            shareChat(currentSession);
+                            setShowChatMenu(false);
+                          }}
+                          className="w-full flex items-center space-x-3 p-2 hover:bg-white/10 rounded-lg transition-colors text-left"
+                        >
+                          <Share2 className="w-4 h-4 text-white/60" />
+                          <span className="text-sm text-white">Share Chat</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            deleteSession(currentSession.id);
+                            setShowChatMenu(false);
+                          }}
+                          className="w-full flex items-center space-x-3 p-2 hover:bg-white/10 rounded-lg transition-colors text-left text-red-400 hover:text-red-300"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          <span className="text-sm">Delete Chat</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-6">
+          <div className={`flex-1 overflow-y-auto p-4 space-y-6 ${currentSession?.messages.length === 0 ? 'flex items-center justify-center' : ''}`}>
             {currentSession?.messages.length === 0 ? (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center max-w-md">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Bot className="w-8 h-8 text-blue-600" />
+                              <div className="text-center max-w-md">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-cyan-400/20 to-blue-500/20 rounded-full flex items-center justify-center">
+                    <Bot className="w-8 h-8 text-cyan-400" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2 text-gray-900">Welcome to Promptly</h3>
-                  <p className="text-gray-600 mb-6">
+                  <h3 className="text-xl font-semibold mb-2 text-white">Welcome to Promptly</h3>
+                  <p className="text-white/60 mb-6">
                     Start a conversation by typing your message below. I'll help you create perfect prompts for any task.
                   </p>
                   
@@ -428,64 +500,65 @@ export default function Dashboard() {
                       <button
                         key={index}
                         onClick={() => setInputValue(suggestion)}
-                        className="p-3 text-left bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors text-sm text-gray-700"
+                        className="p-3 text-left bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 transition-colors text-sm text-white/80"
                       >
                         {suggestion}
                       </button>
                     ))}
                   </div>
                 </div>
-              </div>
             ) : (
-              currentSession?.messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div className={`flex items-start space-x-3 max-w-3xl ${message.isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      message.isUser 
-                        ? 'bg-blue-600' 
-                        : 'bg-gray-600'
-                    }`}>
-                      {message.isUser ? (
-                        <User className="w-4 h-4 text-white" />
-                      ) : (
-                        <Bot className="w-4 h-4 text-white" />
-                      )}
-                    </div>
-                    <div className={`rounded-2xl px-4 py-3 max-w-2xl ${
+              <>
+                {currentSession?.messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`flex items-start space-x-3 max-w-3xl ${message.isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        message.isUser 
+                          ? 'bg-blue-600' 
+                          : 'bg-gray-600'
+                      }`}>
+                        {message.isUser ? (
+                          <User className="w-4 h-4 text-white" />
+                        ) : (
+                          <Bot className="w-4 h-4 text-white" />
+                        )}
+                      </div>
+                                          <div className={`rounded-2xl px-4 py-3 max-w-2xl ${
                       message.isUser
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-900'
+                        ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-black'
+                        : 'bg-white/10 backdrop-blur-sm border border-white/10 text-white'
                     }`}>
                       <div className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</div>
                     </div>
-                  </div>
-                </div>
-              ))
-            )}
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="flex items-start space-x-3 max-w-3xl">
-                  <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center">
-                    <Bot className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="bg-gray-100 rounded-2xl px-4 py-3">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
-                </div>
-              </div>
+                ))}
+                {isTyping && (
+                  <div className="flex justify-start">
+                    <div className="flex items-start space-x-3 max-w-3xl">
+                      <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center">
+                        <Bot className="w-4 h-4 text-white" />
+                      </div>
+                                        <div className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl px-4 py-3">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                  </div>
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </>
             )}
-            <div ref={messagesEndRef} />
           </div>
 
           {/* Configuration Panel */}
-          <div className="border-t border-gray-200 p-4 bg-gray-50">
+          <div className="border-t border-white/10 p-4 bg-black/80 backdrop-blur-xl">
             <div className="flex items-center space-x-4 mb-4 overflow-x-auto">
               {[
                 { type: 'role', label: 'Role', icon: User },
@@ -495,7 +568,7 @@ export default function Dashboard() {
               ].map((config) => {
                 const current = getCurrentOption(config.type);
                 return (
-                  <div key={config.type} className="relative flex-shrink-0">
+                  <div key={config.type} className="relative flex-shrink-0 dropdown-container">
                     <button
                       onClick={() => {
                         setShowRoleSelector(config.type === 'role' ? !showRoleSelector : false);
@@ -503,11 +576,11 @@ export default function Dashboard() {
                         setShowLengthSelector(config.type === 'length' ? !showLengthSelector : false);
                         setShowTuningSelector(config.type === 'tuning' ? !showTuningSelector : false);
                       }}
-                      className="flex items-center space-x-2 px-3 py-2 bg-white hover:bg-gray-50 rounded-lg border border-gray-200 transition-colors text-sm"
+                      className="flex items-center space-x-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg border border-white/20 transition-colors text-sm"
                     >
-                      <config.icon className="w-4 h-4 text-gray-600" />
-                      <span className="text-gray-900">{current?.label}</span>
-                      <ChevronDown className="w-4 h-4 text-gray-600" />
+                      <config.icon className="w-4 h-4 text-white/60" />
+                      <span className="text-white">{current?.label}</span>
+                      <ChevronDown className="w-4 h-4 text-white/60" />
                     </button>
                     
                     {/* Dropdown */}
@@ -515,7 +588,7 @@ export default function Dashboard() {
                       (config.type === 'format' && showFormatSelector) ||
                       (config.type === 'length' && showLengthSelector) ||
                       (config.type === 'tuning' && showTuningSelector)) && (
-                      <div className="absolute bottom-full left-0 mb-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-10">
+                      <div className="absolute bottom-full left-0 mb-2 w-64 bg-black/90 backdrop-blur-xl border border-white/20 rounded-lg shadow-lg p-2 z-10">
                         {config.type === 'role' && roleOptions.map((option) => (
                           <button
                             key={option.value}
@@ -523,12 +596,12 @@ export default function Dashboard() {
                               setSelectedRole(option.value as Role);
                               setShowRoleSelector(false);
                             }}
-                            className="w-full flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors text-left"
+                            className="w-full flex items-center space-x-3 p-2 hover:bg-white/10 rounded-lg transition-colors text-left"
                           >
-                            <option.icon className="w-4 h-4 text-gray-600" />
+                            <option.icon className="w-4 h-4 text-white/60" />
                             <div>
-                              <div className="text-sm text-gray-900">{option.label}</div>
-                              <div className="text-xs text-gray-500">{option.desc}</div>
+                              <div className="text-sm text-white">{option.label}</div>
+                              <div className="text-xs text-white/60">{option.desc}</div>
                             </div>
                           </button>
                         ))}
@@ -539,12 +612,12 @@ export default function Dashboard() {
                               setOutputFormat(option.value as OutputFormat);
                               setShowFormatSelector(false);
                             }}
-                            className="w-full flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors text-left"
+                            className="w-full flex items-center space-x-3 p-2 hover:bg-white/10 rounded-lg transition-colors text-left"
                           >
-                            <option.icon className="w-4 h-4 text-gray-600" />
+                            <option.icon className="w-4 h-4 text-white/60" />
                             <div>
-                              <div className="text-sm text-gray-900">{option.label}</div>
-                              <div className="text-xs text-gray-500">{option.desc}</div>
+                              <div className="text-sm text-white">{option.label}</div>
+                              <div className="text-xs text-white/60">{option.desc}</div>
                             </div>
                           </button>
                         ))}
@@ -555,12 +628,12 @@ export default function Dashboard() {
                               setResponseLength(option.value as ResponseLength);
                               setShowLengthSelector(false);
                             }}
-                            className="w-full flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors text-left"
+                            className="w-full flex items-center space-x-3 p-2 hover:bg-white/10 rounded-lg transition-colors text-left"
                           >
-                            <option.icon className="w-4 h-4 text-gray-600" />
+                            <option.icon className="w-4 h-4 text-white/60" />
                             <div>
-                              <div className="text-sm text-gray-900">{option.label}</div>
-                              <div className="text-xs text-gray-500">{option.desc}</div>
+                              <div className="text-sm text-white">{option.label}</div>
+                              <div className="text-xs text-white/60">{option.desc}</div>
                             </div>
                           </button>
                         ))}
@@ -571,12 +644,12 @@ export default function Dashboard() {
                               setTuningOption(option.value as TuningOption);
                               setShowTuningSelector(false);
                             }}
-                            className="w-full flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors text-left"
+                            className="w-full flex items-center space-x-3 p-2 hover:bg-white/10 rounded-lg transition-colors text-left"
                           >
-                            <option.icon className="w-4 h-4 text-gray-600" />
+                            <option.icon className="w-4 h-4 text-white/60" />
                             <div>
-                              <div className="text-sm text-gray-900">{option.label}</div>
-                              <div className="text-xs text-gray-500">{option.desc}</div>
+                              <div className="text-sm text-white">{option.label}</div>
+                              <div className="text-xs text-white/60">{option.desc}</div>
                             </div>
                           </button>
                         ))}
@@ -596,7 +669,7 @@ export default function Dashboard() {
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Describe what you need help with..."
-                  className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/40 resize-none focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-transparent"
                   rows={1}
                   style={{ minHeight: '48px', maxHeight: '120px' }}
                 />
@@ -604,7 +677,7 @@ export default function Dashboard() {
               <button
                 onClick={handleSendMessage}
                 disabled={!inputValue.trim() || isGenerating}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white p-3 rounded-xl transition-colors disabled:cursor-not-allowed"
+                className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 disabled:from-gray-500 disabled:to-gray-600 text-black p-3 rounded-xl transition-all duration-200 disabled:cursor-not-allowed"
               >
                 <Send className="w-5 h-5" />
               </button>

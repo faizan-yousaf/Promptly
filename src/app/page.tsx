@@ -193,8 +193,7 @@ export default function Home() {
         </ScrollReveal>
       </div>
 
-      {/* Spotlight Footer */}
-      <SpotlightNewDemo />
+      <Footer />
     </div>
   );
 }
