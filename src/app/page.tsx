@@ -45,6 +45,11 @@ const MultilingualSection = dynamic(() => import('@/components/sections/Multilin
   ssr: false
 });
 
+const ScrollStackSection = dynamic(() => import('@/components/sections/ScrollStackSection'), {
+  loading: () => <SectionSkeleton />,
+  ssr: false
+});
+
 export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -197,8 +202,15 @@ export default function Home() {
           </Suspense>
         </ScrollReveal>
 
-        {/* Scroll Float Effect */}
+        {/* ScrollStack Section */}
         <ScrollReveal delay={0.6} y={150}>
+          <Suspense fallback={<SectionSkeleton />}>
+            <ScrollStackSection />
+          </Suspense>
+        </ScrollReveal>
+
+        {/* Scroll Float Effect */}
+        <ScrollReveal delay={0.7} y={180}>
           <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: '#000000'}}>
             <ScrollFloat
                animationDuration={1}
@@ -215,7 +227,7 @@ export default function Home() {
         </ScrollReveal>
 
         {/* CTA Section */}
-        <ScrollReveal delay={0.7} y={80}>
+        <ScrollReveal delay={0.8} y={80}>
           <Suspense fallback={<SectionSkeleton />}>
             <CTASection visibleElements={visibleElements} />
           </Suspense>
