@@ -1,17 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { validateEnvironmentVariables } from '@/lib/utils';
+import { auth } from '@clerk/nextjs/server';
 
 export async function GET(request: NextRequest) {
   try {
+    // Check authentication and admin permissions (temporarily disabled for testing)
+    // const { userId } = auth();
+    // if (!userId) {
+    //   return NextResponse.json(
+    //     { error: 'Authentication required' },
+    //     { status: 401 }
+    //   );
+    // }
+    
+    // Temporary: Use a mock user ID for testing
+    const userId = 'test-user-id';
+
+    // Only allow in development environment or for specific admin users
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json(
+        { error: 'Endpoint not available in production' },
+        { status: 403 }
+      );
+    }
+
     // Validate environment variables
     validateEnvironmentVariables();
     
     // Create Supabase client
     const supabase = createClient();
     
-    // Test database connection
-    const { data, error } = await supabase
+    // Simple health check without exposing sensitive information
+    const { error } = await supabase
       .from('user_profiles')
       .select('count', { count: 'exact', head: true });
     
@@ -19,8 +40,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { 
           status: 'error', 
-          message: 'Database connection failed', 
-          error: error.message 
+          message: 'Database connection failed'
         },
         { status: 500 }
       );
@@ -29,28 +49,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       status: 'success',
       message: 'Database connection successful',
-      tables: {
-        user_profiles: 'accessible',
-        chat_sessions: 'accessible',
-        chat_messages: 'accessible',
-        prompt_history: 'accessible',
-        user_settings: 'accessible'
-      },
-      environment: {
-        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'configured' : 'missing',
-        supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'configured' : 'missing',
-        geminiKey: process.env.GEMINI_API_KEY ? 'configured' : 'missing',
-        groqKey: process.env.GROQ_API_KEY ? 'configured' : 'missing',
-        openRouterKey: process.env.OPENROUTER_API_KEY ? 'configured' : 'missing'
-      }
+      timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Database test error:', error);
+    console.error('Database test error:', error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json(
       { 
         status: 'error', 
-        message: 'Test failed', 
-        error: error instanceof Error ? error.message : 'Unknown error'
+        message: 'Test failed'
       },
       { status: 500 }
     );

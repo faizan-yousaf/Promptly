@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Menu, X, Search, User } from 'lucide-react';
+import { Menu, X, Search } from 'lucide-react';
+import { useAuth, SignInButton, SignOutButton, UserButton } from '@clerk/nextjs';
 
 interface NavigationProps {
   currentPage?: string;
@@ -11,6 +12,7 @@ interface NavigationProps {
 const Navigation: React.FC<NavigationProps> = ({ currentPage = 'home' }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isSignedIn, isLoaded } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -68,15 +70,46 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage = 'home' }) => {
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center space-x-4">
-                          <button className="p-2 text-white/60 hover:text-[#0ea5e9] hover:glow-text-primary transition-colors">
+            <button className="p-2 text-white/60 hover:text-[#0ea5e9] hover:glow-text-primary transition-colors">
               <Search className="w-5 h-5" />
             </button>
-            <Link
-              href="/dashboard"
-              className="bg-gradient-to-r from-[#0ea5e9] to-[#06b6d4] hover:from-[#0284c7] hover:to-[#0891b2] text-black px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-[#0ea5e9]/25 glow-primary"
-            >
-              Get Started
-            </Link>
+            
+            {isLoaded && (
+              <>
+                {isSignedIn ? (
+                  <div className="flex items-center space-x-4">
+                    <Link
+                      href="/dashboard"
+                      className="bg-gradient-to-r from-[#0ea5e9] to-[#06b6d4] hover:from-[#0284c7] hover:to-[#0891b2] text-black px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-[#0ea5e9]/25 glow-primary"
+                    >
+                      Dashboard
+                    </Link>
+                    <UserButton 
+                      appearance={{
+                        elements: {
+                          userButtonAvatarBox: "w-8 h-8",
+                          userButtonTrigger: "focus:shadow-none",
+                        }
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-4">
+                    <SignInButton mode="modal">
+                      <button className="text-white/80 hover:text-[#0ea5e9] hover:glow-text-primary transition-colors px-4 py-2">
+                        Sign In
+                      </button>
+                    </SignInButton>
+                    <Link
+                      href="/sign-up"
+                      className="bg-gradient-to-r from-[#0ea5e9] to-[#06b6d4] hover:from-[#0284c7] hover:to-[#0891b2] text-black px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-[#0ea5e9]/25 glow-primary"
+                    >
+                      Get Started
+                    </Link>
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -107,13 +140,44 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage = 'home' }) => {
                 </Link>
               ))}
               <div className="pt-4 border-t border-white/10">
-                <Link
-                  href="/dashboard"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black px-4 py-3 rounded-lg font-semibold text-center transition-all duration-200 hover:scale-105"
-                >
-                  Get Started
-                </Link>
+                {isLoaded && (
+                  <>
+                    {isSignedIn ? (
+                      <div className="space-y-2">
+                        <Link
+                          href="/dashboard"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="block w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black px-4 py-3 rounded-lg font-semibold text-center transition-all duration-200 hover:scale-105"
+                        >
+                          Dashboard
+                        </Link>
+                        <SignOutButton>
+                          <button className="block w-full text-gray-400 hover:text-white px-4 py-2 text-center transition-colors">
+                            Sign Out
+                          </button>
+                        </SignOutButton>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <SignInButton mode="modal">
+                          <button 
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="block w-full text-gray-400 hover:text-white px-4 py-2 text-center transition-colors"
+                          >
+                            Sign In
+                          </button>
+                        </SignInButton>
+                        <Link
+                          href="/sign-up"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="block w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black px-4 py-3 rounded-lg font-semibold text-center transition-all duration-200 hover:scale-105"
+                        >
+                          Get Started
+                        </Link>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           </div>

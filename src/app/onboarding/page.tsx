@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@clerk/nextjs';
 
 type UserRole = 'marketer' | 'developer' | 'writer' | 'researcher' | 'entrepreneur' | 'student';
 type Purpose = 'content-creation' | 'code-assistance' | 'research' | 'business' | 'education' | 'creative';
@@ -15,6 +16,7 @@ interface OnboardingData {
 }
 
 export default function Onboarding() {
+  const { isSignedIn, isLoaded } = useAuth();
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [data, setData] = useState<OnboardingData>({
@@ -162,6 +164,13 @@ export default function Onboarding() {
     router.push('/dashboard');
   };
 
+  // Check authentication
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push('/sign-in');
+    }
+  }, [isLoaded, isSignedIn, router]);
+
   const canProceed = () => {
     switch (step) {
       case 1: return data.role !== null;
@@ -171,6 +180,18 @@ export default function Onboarding() {
       default: return false;
     }
   };
+
+  // Show loading state while checking authentication
+  if (!isLoaded || !isSignedIn) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0ea5e9] mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">

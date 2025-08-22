@@ -1,13 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { useState, useEffect, Suspense } from 'react';
-import { Button } from "@/components/ui/Button"
-import { ArrowRight, Zap, Brain, Globe, Clock, Palette, BarChart3, CheckCircle, Star, Users, TrendingUp, Award, Sparkles, Rocket, Target } from "lucide-react"
 import { initScrollAnimations, initParallaxEffect, initSmoothScroll, initTypingAnimation, initCounterAnimation, initFloatingParticles } from '@/lib/animations.js';
 import { SectionSkeleton } from '@/components/sections';
 import { LoaderThreeDemo } from '@/components/LoaderThreeDemo';
-import { SpotlightNewDemo } from '@/components/SpotlightNewDemo';
+
 import ScrollFloat from '@/components/ScrollFloat';
 import ScrollReveal from '@/components/ScrollReveal';
 import Navigation from '@/components/Navigation';

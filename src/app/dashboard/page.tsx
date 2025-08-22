@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Navigation from '@/components/Navigation';
+import { useAuth } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 import { 
   Send, 
   Plus, 
@@ -51,6 +53,9 @@ interface ChatSession {
 }
 
 export default function Dashboard() {
+  const { isSignedIn, isLoaded } = useAuth();
+  const router = useRouter();
+  
   const [inputValue, setInputValue] = useState('');
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
@@ -73,6 +78,13 @@ export default function Dashboard() {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Check authentication
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push('/sign-in');
+    }
+  }, [isLoaded, isSignedIn, router]);
 
   useEffect(() => {
     scrollToBottom();
@@ -98,6 +110,18 @@ export default function Dashboard() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Show loading state while checking authentication
+  if (!isLoaded || !isSignedIn) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0ea5e9] mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const createNewSession = () => {
     const newSession: ChatSession = {

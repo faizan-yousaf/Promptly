@@ -2,19 +2,17 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import Groq from 'groq-sdk'
 import { OpenRouterClient } from './openrouter'
 
-// Initialize AI clients
-const gemini = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY!,
-})
+// Initialize AI clients (only if API keys are available)
+const gemini = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
+const groq = process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_KEY }) : null;
 
-// Initialize OpenRouter client
-const openRouter = new OpenRouterClient({
-  apiKey: process.env.OPENROUTER_API_KEY!,
-  siteUrl: process.env.SITE_URL,
+// Initialize OpenRouter client (only if API key is available)
+const openRouter = process.env.OPENROUTER_API_KEY ? new OpenRouterClient({
+  apiKey: process.env.OPENROUTER_API_KEY,
+  siteUrl: process.env.SITE_URL || 'http://localhost:3000',
   siteName: 'Promptly',
   defaultModel: process.env.OPENROUTER_DEFAULT_MODEL || 'openai/gpt-4o',
-})
+}) : null;
 
 export type AIModel = 'gemini' | 'groq' | 'openrouter'
 export type ToneType = 'professional' | 'friendly' | 'creative'
@@ -111,6 +109,10 @@ Provide your step-by-step reasoning and final response.`
 
 // Gemini API call
 export async function callGemini(request: PromptRequest): Promise<PromptResponse> {
+  if (!gemini) {
+    throw new Error('Gemini API key not configured');
+  }
+  
   const startTime = Date.now()
   
   try {
@@ -137,6 +139,10 @@ export async function callGemini(request: PromptRequest): Promise<PromptResponse
 
 // Groq API call
 export async function callGroq(request: PromptRequest): Promise<PromptResponse> {
+  if (!groq) {
+    throw new Error('Groq API key not configured');
+  }
+  
   const startTime = Date.now()
   
   try {
@@ -171,6 +177,10 @@ export async function callGroq(request: PromptRequest): Promise<PromptResponse> 
 
 // OpenRouter API call
 export async function callOpenRouter(request: PromptRequest): Promise<PromptResponse> {
+  if (!openRouter) {
+    throw new Error('OpenRouter API key not configured');
+  }
+  
   const startTime = Date.now()
   
   try {

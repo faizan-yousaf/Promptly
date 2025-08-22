@@ -13,7 +13,7 @@ const GitHubGlobe: React.FC<GitHubGlobeProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isHovered, setIsHovered] = useState(false);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | null>(null);
   const rotationRef = useRef(0);
 
   useEffect(() => {
