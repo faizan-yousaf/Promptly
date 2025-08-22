@@ -19,7 +19,9 @@ import {
   FileText,
   Brain,
   Globe,
-  Palette
+  Palette,
+  Menu,
+  X
 } from 'lucide-react';
 
 type Role = 'developer' | 'marketer' | 'writer' | 'researcher' | 'entrepreneur' | 'student';
@@ -51,7 +53,7 @@ export default function Dashboard() {
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   
   // Configuration states
@@ -87,6 +89,7 @@ export default function Dashboard() {
     };
     setCurrentSession(newSession);
     setChatSessions(prev => [newSession, ...prev]);
+    setSidebarOpen(false);
   };
 
   const generateSessionTitle = (firstMessage: string): string => {
@@ -279,127 +282,158 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-gray-50 text-gray-900">
       <Navigation currentPage="dashboard" />
       
-      <div className="flex h-screen pt-20">
+      <div className="flex h-screen pt-16">
+        {/* Mobile Sidebar Overlay */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
         {/* Sidebar */}
-        <div className={`bg-white/5 backdrop-blur-sm border-r border-white/10 transition-all duration-300 ${
-          sidebarOpen ? 'w-80' : 'w-20'
-        }`}>
+        <div className={`fixed lg:static inset-y-0 left-0 z-50 lg:z-auto bg-white border-r border-gray-200 transition-transform duration-300 lg:transition-none ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        } lg:w-80`}>
           <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="p-4 border-b border-white/10">
+            <div className="p-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                {sidebarOpen && (
-                  <Link href="/" className="text-xl font-bold">
-                    <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                      Promptly
-                    </span>
-                  </Link>
-                )}
+                <Link href="/" className="text-xl font-bold text-gray-900">
+                  Promptly
+                </Link>
                 <button
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                  onClick={() => setSidebarOpen(false)}
+                  className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  {sidebarOpen ? '←' : '→'}
+                  <X className="w-5 h-5" />
                 </button>
               </div>
-              {sidebarOpen && (
-                <button
-                  onClick={createNewSession}
-                  className="w-full mt-3 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-black py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 font-semibold"
-                >
-                  <Plus className="w-4 h-4" />
-                  New Chat
-                </button>
-              )}
+              <button
+                onClick={createNewSession}
+                className="w-full mt-3 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 font-medium"
+              >
+                <Plus className="w-4 h-4" />
+                New Chat
+              </button>
             </div>
 
             {/* Chat History */}
-            {sidebarOpen && (
-              <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                {chatSessions.length === 0 ? (
-                  <div className="text-white/40 text-sm text-center py-8">
-                    No conversations yet
-                  </div>
-                ) : (
-                  chatSessions.map((session) => (
-                    <div
-                      key={session.id}
-                      className={`group p-3 rounded-lg cursor-pointer transition-all duration-200 ${
-                        currentSession?.id === session.id
-                          ? 'bg-gradient-to-r from-cyan-400/20 to-blue-500/20 border border-cyan-400/30'
-                          : 'hover:bg-white/10'
-                      }`}
-                      onClick={() => setCurrentSession(session)}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-white truncate">
-                            {session.title}
-                          </div>
-                          <div className="text-xs text-white/60 mt-1">
-                            {session.lastMessage.toLocaleDateString()}
-                          </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              {chatSessions.length === 0 ? (
+                <div className="text-gray-500 text-sm text-center py-8">
+                  No conversations yet
+                </div>
+              ) : (
+                chatSessions.map((session) => (
+                  <div
+                    key={session.id}
+                    className={`group p-3 rounded-lg cursor-pointer transition-colors ${
+                      currentSession?.id === session.id
+                        ? 'bg-blue-50 border border-blue-200'
+                        : 'hover:bg-gray-100'
+                    }`}
+                    onClick={() => {
+                      setCurrentSession(session);
+                      setSidebarOpen(false);
+                    }}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-gray-900 truncate">
+                          {session.title}
                         </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteSession(session.id);
-                          }}
-                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded transition-all duration-200"
-                        >
-                          <Trash2 className="w-4 h-4 text-white/60 hover:text-red-400" />
-                        </button>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {session.lastMessage.toLocaleDateString()}
+                        </div>
                       </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteSession(session.id);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 rounded transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4 text-gray-500 hover:text-red-500" />
+                      </button>
                     </div>
-                  ))
-                )}
-              </div>
-            )}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col bg-white">
           {/* Chat Header */}
-          {currentSession && (
-            <div className="bg-white/5 backdrop-blur-sm border-b border-white/10 p-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-white">{currentSession.title}</h2>
+          <div className="border-b border-gray-200 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Menu className="w-5 h-5" />
+                </button>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {currentSession?.title || 'New Chat'}
+                </h2>
+              </div>
+              {currentSession && (
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => exportChat(currentSession)}
-                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                     title="Export Chat"
                   >
-                    <Download className="w-4 h-4 text-white/60" />
+                    <Download className="w-4 h-4 text-gray-600" />
                   </button>
                   <button
                     onClick={() => deleteSession(currentSession.id)}
-                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                     title="Delete Chat"
                   >
-                    <Trash2 className="w-4 h-4 text-white/60" />
+                    <Trash2 className="w-4 h-4 text-gray-600" />
                   </button>
                 </div>
-              </div>
+              )}
             </div>
-          )}
+          </div>
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-6">
             {currentSession?.messages.length === 0 ? (
               <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-cyan-400/20 to-blue-500/20 rounded-2xl flex items-center justify-center">
-                    <Bot className="w-8 h-8 text-cyan-400" />
+                <div className="text-center max-w-md">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Bot className="w-8 h-8 text-blue-600" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2 text-white">Welcome to Promptly</h3>
-                  <p className="text-white/60 mb-6 max-w-md">
+                  <h3 className="text-xl font-semibold mb-2 text-gray-900">Welcome to Promptly</h3>
+                  <p className="text-gray-600 mb-6">
                     Start a conversation by typing your message below. I'll help you create perfect prompts for any task.
                   </p>
+                  
+                  {/* Quick Start Suggestions */}
+                  <div className="grid grid-cols-1 gap-3">
+                    {[
+                      "Write a professional email to a client",
+                      "Create a marketing campaign for a new product",
+                      "Generate code documentation for a function",
+                      "Write a blog post about AI trends"
+                    ].map((suggestion, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setInputValue(suggestion)}
+                        className="p-3 text-left bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors text-sm text-gray-700"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             ) : (
@@ -411,26 +445,21 @@ export default function Dashboard() {
                   <div className={`flex items-start space-x-3 max-w-3xl ${message.isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                       message.isUser 
-                        ? 'bg-gradient-to-r from-cyan-400 to-blue-500' 
-                        : 'bg-gradient-to-r from-purple-400 to-pink-500'
+                        ? 'bg-blue-600' 
+                        : 'bg-gray-600'
                     }`}>
                       {message.isUser ? (
-                        <User className="w-4 h-4 text-black" />
+                        <User className="w-4 h-4 text-white" />
                       ) : (
-                        <Bot className="w-4 h-4 text-black" />
+                        <Bot className="w-4 h-4 text-white" />
                       )}
                     </div>
-                    <div className={`rounded-2xl px-4 py-3 ${
+                    <div className={`rounded-2xl px-4 py-3 max-w-2xl ${
                       message.isUser
-                        ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-black'
-                        : 'bg-white/10 backdrop-blur-sm border border-white/10 text-white'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-900'
                     }`}>
-                      <div className="whitespace-pre-wrap">{message.content}</div>
-                      <div className={`text-xs mt-2 ${
-                        message.isUser ? 'text-black/60' : 'text-white/40'
-                      }`}>
-                        {message.timestamp.toLocaleTimeString()}
-                      </div>
+                      <div className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</div>
                     </div>
                   </div>
                 </div>
@@ -439,14 +468,14 @@ export default function Dashboard() {
             {isTyping && (
               <div className="flex justify-start">
                 <div className="flex items-start space-x-3 max-w-3xl">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center">
-                    <Bot className="w-4 h-4 text-black" />
+                  <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center">
+                    <Bot className="w-4 h-4 text-white" />
                   </div>
-                  <div className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl px-4 py-3">
+                  <div className="bg-gray-100 rounded-2xl px-4 py-3">
                     <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
                 </div>
@@ -456,8 +485,8 @@ export default function Dashboard() {
           </div>
 
           {/* Configuration Panel */}
-          <div className="bg-white/5 backdrop-blur-sm border-t border-white/10 p-4">
-            <div className="flex items-center space-x-4 mb-4">
+          <div className="border-t border-gray-200 p-4 bg-gray-50">
+            <div className="flex items-center space-x-4 mb-4 overflow-x-auto">
               {[
                 { type: 'role', label: 'Role', icon: User },
                 { type: 'format', label: 'Format', icon: FileText },
@@ -466,7 +495,7 @@ export default function Dashboard() {
               ].map((config) => {
                 const current = getCurrentOption(config.type);
                 return (
-                  <div key={config.type} className="relative">
+                  <div key={config.type} className="relative flex-shrink-0">
                     <button
                       onClick={() => {
                         setShowRoleSelector(config.type === 'role' ? !showRoleSelector : false);
@@ -474,11 +503,11 @@ export default function Dashboard() {
                         setShowLengthSelector(config.type === 'length' ? !showLengthSelector : false);
                         setShowTuningSelector(config.type === 'tuning' ? !showTuningSelector : false);
                       }}
-                      className="flex items-center space-x-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+                      className="flex items-center space-x-2 px-3 py-2 bg-white hover:bg-gray-50 rounded-lg border border-gray-200 transition-colors text-sm"
                     >
-                      <config.icon className="w-4 h-4 text-white/60" />
-                      <span className="text-sm text-white">{current?.label}</span>
-                      <ChevronDown className="w-4 h-4 text-white/60" />
+                      <config.icon className="w-4 h-4 text-gray-600" />
+                      <span className="text-gray-900">{current?.label}</span>
+                      <ChevronDown className="w-4 h-4 text-gray-600" />
                     </button>
                     
                     {/* Dropdown */}
@@ -486,7 +515,7 @@ export default function Dashboard() {
                       (config.type === 'format' && showFormatSelector) ||
                       (config.type === 'length' && showLengthSelector) ||
                       (config.type === 'tuning' && showTuningSelector)) && (
-                      <div className="absolute bottom-full left-0 mb-2 w-64 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-2 z-10">
+                      <div className="absolute bottom-full left-0 mb-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-10">
                         {config.type === 'role' && roleOptions.map((option) => (
                           <button
                             key={option.value}
@@ -494,12 +523,12 @@ export default function Dashboard() {
                               setSelectedRole(option.value as Role);
                               setShowRoleSelector(false);
                             }}
-                            className="w-full flex items-center space-x-3 p-2 hover:bg-white/10 rounded-lg transition-colors text-left"
+                            className="w-full flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors text-left"
                           >
-                            <option.icon className="w-4 h-4 text-white/60" />
+                            <option.icon className="w-4 h-4 text-gray-600" />
                             <div>
-                              <div className="text-sm text-white">{option.label}</div>
-                              <div className="text-xs text-white/60">{option.desc}</div>
+                              <div className="text-sm text-gray-900">{option.label}</div>
+                              <div className="text-xs text-gray-500">{option.desc}</div>
                             </div>
                           </button>
                         ))}
@@ -510,12 +539,12 @@ export default function Dashboard() {
                               setOutputFormat(option.value as OutputFormat);
                               setShowFormatSelector(false);
                             }}
-                            className="w-full flex items-center space-x-3 p-2 hover:bg-white/10 rounded-lg transition-colors text-left"
+                            className="w-full flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors text-left"
                           >
-                            <option.icon className="w-4 h-4 text-white/60" />
+                            <option.icon className="w-4 h-4 text-gray-600" />
                             <div>
-                              <div className="text-sm text-white">{option.label}</div>
-                              <div className="text-xs text-white/60">{option.desc}</div>
+                              <div className="text-sm text-gray-900">{option.label}</div>
+                              <div className="text-xs text-gray-500">{option.desc}</div>
                             </div>
                           </button>
                         ))}
@@ -526,12 +555,12 @@ export default function Dashboard() {
                               setResponseLength(option.value as ResponseLength);
                               setShowLengthSelector(false);
                             }}
-                            className="w-full flex items-center space-x-3 p-2 hover:bg-white/10 rounded-lg transition-colors text-left"
+                            className="w-full flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors text-left"
                           >
-                            <option.icon className="w-4 h-4 text-white/60" />
+                            <option.icon className="w-4 h-4 text-gray-600" />
                             <div>
-                              <div className="text-sm text-white">{option.label}</div>
-                              <div className="text-xs text-white/60">{option.desc}</div>
+                              <div className="text-sm text-gray-900">{option.label}</div>
+                              <div className="text-xs text-gray-500">{option.desc}</div>
                             </div>
                           </button>
                         ))}
@@ -542,12 +571,12 @@ export default function Dashboard() {
                               setTuningOption(option.value as TuningOption);
                               setShowTuningSelector(false);
                             }}
-                            className="w-full flex items-center space-x-3 p-2 hover:bg-white/10 rounded-lg transition-colors text-left"
+                            className="w-full flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition-colors text-left"
                           >
-                            <option.icon className="w-4 h-4 text-white/60" />
+                            <option.icon className="w-4 h-4 text-gray-600" />
                             <div>
-                              <div className="text-sm text-white">{option.label}</div>
-                              <div className="text-xs text-white/60">{option.desc}</div>
+                              <div className="text-sm text-gray-900">{option.label}</div>
+                              <div className="text-xs text-gray-500">{option.desc}</div>
                             </div>
                           </button>
                         ))}
@@ -567,7 +596,7 @@ export default function Dashboard() {
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Describe what you need help with..."
-                  className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/40 resize-none focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-transparent"
+                  className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   rows={1}
                   style={{ minHeight: '48px', maxHeight: '120px' }}
                 />
@@ -575,7 +604,7 @@ export default function Dashboard() {
               <button
                 onClick={handleSendMessage}
                 disabled={!inputValue.trim() || isGenerating}
-                className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 disabled:from-gray-500 disabled:to-gray-600 text-black p-3 rounded-xl transition-all duration-200 disabled:cursor-not-allowed"
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white p-3 rounded-xl transition-colors disabled:cursor-not-allowed"
               >
                 <Send className="w-5 h-5" />
               </button>

@@ -195,8 +195,6 @@ export default function Home() {
 
       {/* Spotlight Footer */}
       <SpotlightNewDemo />
-      
-      <Footer />
     </div>
   );
 }

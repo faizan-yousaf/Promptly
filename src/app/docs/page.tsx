@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
 import { 
   BookOpen, 
   Code, 
@@ -17,12 +16,24 @@ import {
   FileText,
   Terminal,
   Database,
-  Shield
+  Shield,
+  Copy,
+  Check,
+  AlertCircle,
+  Info,
+  Lightbulb,
+  ArrowRight,
+  Github,
+  Download,
+  Play,
+  Palette
 } from 'lucide-react';
 
 export default function Docs() {
   const [activeSection, setActiveSection] = useState('getting-started');
   const [searchQuery, setSearchQuery] = useState('');
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('javascript');
 
   const sections = [
     {
@@ -139,21 +150,77 @@ export default function Docs() {
     }
   ];
 
+  const codeExamples = {
+    javascript: `import { Promptly } from 'promptly';
+
+const promptly = new Promptly({
+  apiKey: process.env.PROMPTLY_API_KEY
+});
+
+const response = await promptly.generate({
+  prompt: "Write a professional email to a client",
+  role: "business",
+  tone: "professional",
+  language: "en"
+});
+
+console.log(response.prompt);`,
+    python: `import promptly
+
+client = promptly.Client(api_key="your-api-key")
+
+response = client.generate(
+    prompt="Write a professional email to a client",
+    role="business",
+    tone="professional",
+    language="en"
+)
+
+print(response.prompt)`,
+    curl: `curl -X POST https://api.promptly.ai/v1/generate \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "prompt": "Write a professional email to a client",
+    "role": "business",
+    "tone": "professional",
+    "language": "en"
+  }'`
+  };
+
+  const copyToClipboard = async (code: string, language: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedCode(language);
+      setTimeout(() => setCopiedCode(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy code:', err);
+    }
+  };
+
+  const filteredSections = sections.filter(section =>
+    section.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    section.content.some(item => 
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  );
+
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-gray-50 text-gray-900">
       <Navigation currentPage="docs" />
       
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+      <section className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto text-center">
           <div className="mb-8">
-            <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-r from-[#0ea5e9] to-[#06b6d4] rounded-2xl flex items-center justify-center glow-primary">
-              <BookOpen className="w-8 h-8 text-black" />
+            <div className="w-16 h-16 mx-auto mb-6 bg-blue-600 rounded-2xl flex items-center justify-center">
+              <BookOpen className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold mb-6">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 text-gray-900">
               Documentation
             </h1>
-            <p className="text-xl text-white/70 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
               Everything you need to integrate Promptly into your applications and workflows.
             </p>
           </div>
@@ -161,13 +228,13 @@ export default function Docs() {
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search documentation..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl pl-12 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#0ea5e9]/50 focus:border-transparent"
+                className="w-full bg-white border border-gray-300 rounded-xl pl-12 pr-4 py-4 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
               />
             </div>
           </div>
@@ -175,34 +242,53 @@ export default function Docs() {
       </section>
 
       {/* Main Content */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <section className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-4 gap-8">
             {/* Sidebar */}
             <div className="lg:col-span-1">
               <div className="sticky top-24">
                 <nav className="space-y-2">
-                  {sections.map((section) => (
+                  {filteredSections.map((section) => (
                     <button
                       key={section.id}
                       onClick={() => setActiveSection(section.id)}
                       className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 text-left ${
                         activeSection === section.id
-                          ? 'bg-gradient-to-r from-[#0ea5e9]/20 to-[#06b6d4]/20 border border-[#0ea5e9]/30 glow-primary'
-                          : 'hover:bg-white/10'
+                          ? 'bg-blue-50 border border-blue-200 text-blue-700'
+                          : 'hover:bg-gray-100 text-gray-700'
                       }`}
                     >
                       <section.icon className={`w-5 h-5 ${
-                        activeSection === section.id ? 'text-[#0ea5e9]' : 'text-white/60'
+                        activeSection === section.id ? 'text-blue-600' : 'text-gray-500'
                       }`} />
                       <span className={`font-medium ${
-                        activeSection === section.id ? 'text-[#0ea5e9]' : 'text-white'
+                        activeSection === section.id ? 'text-blue-700' : 'text-gray-900'
                       }`}>
                         {section.title}
                       </span>
                     </button>
                   ))}
                 </nav>
+
+                {/* Quick Links */}
+                <div className="mt-8 pt-8 border-t border-gray-200">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Quick Links</h3>
+                  <div className="space-y-2">
+                    <a href="/dashboard" className="flex items-center text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                      <ArrowRight className="w-4 h-4 mr-2" />
+                      Try Dashboard
+                    </a>
+                    <a href="/pricing" className="flex items-center text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                      <ArrowRight className="w-4 h-4 mr-2" />
+                      View Pricing
+                    </a>
+                    <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="flex items-center text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                      <Github className="w-4 h-4 mr-2" />
+                      GitHub
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -211,28 +297,38 @@ export default function Docs() {
               {activeSection === 'getting-started' && (
                 <div className="space-y-12">
                   <div>
-                    <h2 className="text-3xl font-bold mb-6 gradient-text-primary">
+                    <h2 className="text-3xl font-bold mb-6 text-gray-900">
                       Getting Started
                     </h2>
-                    <p className="text-white/70 text-lg leading-relaxed mb-8">
+                    <p className="text-gray-600 text-lg leading-relaxed mb-8">
                       Welcome to Promptly! This guide will help you get up and running quickly.
                     </p>
                   </div>
 
                   {/* Quick Start Steps */}
                   <div className="space-y-6">
-                    <h3 className="text-2xl font-semibold mb-6 text-white">Quick Start</h3>
+                    <h3 className="text-2xl font-semibold mb-6 text-gray-900">Quick Start</h3>
                     {quickStartSteps.map((step) => (
-                      <div key={step.step} className="glass p-6 rounded-2xl border border-white/10">
+                      <div key={step.step} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                         <div className="flex items-start space-x-4">
-                          <div className="w-8 h-8 bg-gradient-to-r from-[#0ea5e9] to-[#06b6d4] rounded-full flex items-center justify-center flex-shrink-0">
-                            <span className="text-black font-bold text-sm">{step.step}</span>
+                          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-white font-bold text-sm">{step.step}</span>
                           </div>
                           <div className="flex-1">
-                            <h4 className="text-lg font-semibold mb-2 text-white">{step.title}</h4>
-                            <p className="text-white/70 mb-4">{step.description}</p>
-                            <div className="bg-black/50 rounded-lg p-4 border border-white/10">
-                              <code className="text-[#0ea5e9] font-mono text-sm">{step.code}</code>
+                            <h4 className="text-lg font-semibold mb-2 text-gray-900">{step.title}</h4>
+                            <p className="text-gray-600 mb-4">{step.description}</p>
+                            <div className="bg-gray-900 rounded-lg p-4 border border-gray-700 relative">
+                              <button
+                                onClick={() => copyToClipboard(step.code, `step-${step.step}`)}
+                                className="absolute top-2 right-2 p-2 text-gray-400 hover:text-white transition-colors"
+                              >
+                                {copiedCode === `step-${step.step}` ? (
+                                  <Check className="w-4 h-4" />
+                                ) : (
+                                  <Copy className="w-4 h-4" />
+                                )}
+                              </button>
+                              <code className="text-green-400 font-mono text-sm">{step.code}</code>
                             </div>
                           </div>
                         </div>
@@ -240,13 +336,52 @@ export default function Docs() {
                     ))}
                   </div>
 
+                  {/* Code Examples */}
+                  <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
+                    <h3 className="text-2xl font-semibold mb-6 text-gray-900">Code Examples</h3>
+                    
+                    {/* Language Tabs */}
+                    <div className="flex space-x-1 mb-6">
+                      {Object.keys(codeExamples).map((lang) => (
+                        <button
+                          key={lang}
+                          onClick={() => setActiveTab(lang)}
+                          className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                            activeTab === lang
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {lang.charAt(0).toUpperCase() + lang.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Code Block */}
+                    <div className="bg-gray-900 rounded-lg p-4 border border-gray-700 relative">
+                      <button
+                        onClick={() => copyToClipboard(codeExamples[activeTab as keyof typeof codeExamples], activeTab)}
+                        className="absolute top-2 right-2 p-2 text-gray-400 hover:text-white transition-colors"
+                      >
+                        {copiedCode === activeTab ? (
+                          <Check className="w-4 h-4" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
+                      </button>
+                      <pre className="text-green-400 font-mono text-sm overflow-x-auto">
+                        <code>{codeExamples[activeTab as keyof typeof codeExamples]}</code>
+                      </pre>
+                    </div>
+                  </div>
+
                   {/* Features Grid */}
-                  <div className="grid md:grid-cols-2 gap-6 mt-12">
+                  <div className="grid md:grid-cols-2 gap-6">
                     {sections[2].content.map((feature) => (
-                      <div key={feature.title} className="glass p-6 rounded-2xl border border-white/10 hover:border-[#0ea5e9]/30 transition-all duration-200">
-                        <h4 className="text-lg font-semibold mb-2 text-white">{feature.title}</h4>
-                        <p className="text-white/70 text-sm mb-4">{feature.description}</p>
-                        <a href={feature.link} className="inline-flex items-center text-[#0ea5e9] hover:glow-text-primary transition-colors">
+                      <div key={feature.title} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:border-blue-300 transition-all duration-200">
+                        <h4 className="text-lg font-semibold mb-2 text-gray-900">{feature.title}</h4>
+                        <p className="text-gray-600 text-sm mb-4">{feature.description}</p>
+                        <a href={feature.link} className="inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors">
                           Learn more <ChevronRight className="w-4 h-4 ml-1" />
                         </a>
                       </div>
@@ -258,28 +393,55 @@ export default function Docs() {
               {activeSection === 'api-reference' && (
                 <div className="space-y-12">
                   <div>
-                    <h2 className="text-3xl font-bold mb-6 gradient-text-primary">
+                    <h2 className="text-3xl font-bold mb-6 text-gray-900">
                       API Reference
                     </h2>
-                    <p className="text-white/70 text-lg leading-relaxed mb-8">
+                    <p className="text-gray-600 text-lg leading-relaxed mb-8">
                       Complete API documentation for integrating Promptly into your applications.
                     </p>
                   </div>
 
-                  <div className="glass p-8 rounded-2xl border border-white/10">
-                    <h3 className="text-2xl font-semibold mb-6 text-white">Base URL</h3>
-                    <div className="bg-black/50 rounded-lg p-4 border border-white/10 mb-6">
-                      <code className="text-[#0ea5e9] font-mono text-lg">https://api.promptly.ai/v1</code>
+                  <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
+                    <h3 className="text-2xl font-semibold mb-6 text-gray-900">Base URL</h3>
+                    <div className="bg-gray-900 rounded-lg p-4 border border-gray-700 mb-6">
+                      <code className="text-green-400 font-mono text-lg">https://api.promptly.ai/v1</code>
                     </div>
                     
-                    <h3 className="text-xl font-semibold mb-4 text-white">Authentication</h3>
-                    <p className="text-white/70 mb-4">
+                    <h3 className="text-xl font-semibold mb-4 text-gray-900">Authentication</h3>
+                    <p className="text-gray-600 mb-4">
                       All API requests require authentication using your API key in the Authorization header.
                     </p>
-                    <div className="bg-black/50 rounded-lg p-4 border border-white/10">
-                      <code className="text-[#0ea5e9] font-mono text-sm">
+                    <div className="bg-gray-900 rounded-lg p-4 border border-gray-700">
+                      <code className="text-green-400 font-mono text-sm">
                         Authorization: Bearer YOUR_API_KEY
                       </code>
+                    </div>
+                  </div>
+
+                  {/* API Endpoints */}
+                  <div className="space-y-6">
+                    <h3 className="text-2xl font-semibold text-gray-900">Endpoints</h3>
+                    
+                    {/* Generate Endpoint */}
+                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                      <div className="flex items-center space-x-2 mb-4">
+                        <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">POST</span>
+                        <code className="text-gray-900 font-mono">/generate</code>
+                      </div>
+                      <p className="text-gray-600 mb-4">Generate a prompt based on your input and configuration.</p>
+                      
+                      <h4 className="font-semibold text-gray-900 mb-2">Request Body</h4>
+                      <div className="bg-gray-900 rounded-lg p-4 border border-gray-700">
+                        <pre className="text-green-400 font-mono text-sm">
+{`{
+  "prompt": "Write a professional email",
+  "role": "business",
+  "tone": "professional",
+  "language": "en",
+  "format": "text"
+}`}
+                        </pre>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -288,24 +450,75 @@ export default function Docs() {
               {activeSection === 'features' && (
                 <div className="space-y-12">
                   <div>
-                    <h2 className="text-3xl font-bold mb-6 gradient-text-primary">
+                    <h2 className="text-3xl font-bold mb-6 text-gray-900">
                       Features
                     </h2>
-                    <p className="text-white/70 text-lg leading-relaxed mb-8">
+                    <p className="text-gray-600 text-lg leading-relaxed mb-8">
                       Explore the powerful features that make Promptly the ultimate AI prompt generator.
                     </p>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-8">
                     {sections[2].content.map((feature) => (
-                      <div key={feature.title} className="glass p-8 rounded-2xl border border-white/10 hover:border-[#0ea5e9]/30 transition-all duration-200">
-                        <h3 className="text-xl font-semibold mb-4 text-white">{feature.title}</h3>
-                        <p className="text-white/70 mb-6">{feature.description}</p>
-                        <a href={feature.link} className="inline-flex items-center text-[#0ea5e9] hover:glow-text-primary transition-colors">
-                          Learn more <ChevronRight className="w-4 h-4 ml-1" />
+                      <div key={feature.title} className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm hover:border-blue-300 transition-all duration-200">
+                        <h3 className="text-xl font-semibold mb-4 text-gray-900">{feature.title}</h3>
+                        <p className="text-gray-600 mb-6">{feature.description}</p>
+                        <a href={feature.link} className="inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors">
+                          Learn more <ExternalLink className="w-4 h-4 ml-1" />
                         </a>
                       </div>
                     ))}
+                  </div>
+
+                  {/* Feature Details */}
+                  <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
+                    <h3 className="text-2xl font-semibold mb-6 text-gray-900">Advanced Features</h3>
+                    
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div className="flex items-start space-x-3">
+                          <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <Sparkles className="w-3 h-3 text-blue-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-900">Agent Mode</h4>
+                            <p className="text-sm text-gray-600">Advanced reasoning with multi-step thinking</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-start space-x-3">
+                          <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <Globe className="w-3 h-3 text-green-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-900">Multilingual</h4>
+                            <p className="text-sm text-gray-600">Support for 6+ languages</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="flex items-start space-x-3">
+                          <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <Palette className="w-3 h-3 text-purple-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-900">Custom Tones</h4>
+                            <p className="text-sm text-gray-600">Professional, friendly, creative, technical</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-start space-x-3">
+                          <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <Zap className="w-3 h-3 text-orange-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-900">Lightning Fast</h4>
+                            <p className="text-sm text-gray-600">Get results in seconds</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -313,24 +526,61 @@ export default function Docs() {
               {activeSection === 'integrations' && (
                 <div className="space-y-12">
                   <div>
-                    <h2 className="text-3xl font-bold mb-6 gradient-text-primary">
+                    <h2 className="text-3xl font-bold mb-6 text-gray-900">
                       Integrations
                     </h2>
-                    <p className="text-white/70 text-lg leading-relaxed mb-8">
+                    <p className="text-gray-600 text-lg leading-relaxed mb-8">
                       Connect Promptly with your favorite AI models and platforms.
                     </p>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-8">
                     {sections[3].content.map((integration) => (
-                      <div key={integration.title} className="glass p-8 rounded-2xl border border-white/10 hover:border-[#0ea5e9]/30 transition-all duration-200">
-                        <h3 className="text-xl font-semibold mb-4 text-white">{integration.title}</h3>
-                        <p className="text-white/70 mb-6">{integration.description}</p>
-                        <a href={integration.link} className="inline-flex items-center text-[#0ea5e9] hover:glow-text-primary transition-colors">
+                      <div key={integration.title} className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm hover:border-blue-300 transition-all duration-200">
+                        <h3 className="text-xl font-semibold mb-4 text-gray-900">{integration.title}</h3>
+                        <p className="text-gray-600 mb-6">{integration.description}</p>
+                        <a href={integration.link} className="inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors">
                           View integration <ExternalLink className="w-4 h-4 ml-1" />
                         </a>
                       </div>
                     ))}
+                  </div>
+
+                  {/* Integration Setup */}
+                  <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
+                    <h3 className="text-2xl font-semibold mb-6 text-gray-900">Setup Guide</h3>
+                    
+                    <div className="space-y-6">
+                      <div className="flex items-start space-x-4">
+                        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-white font-bold text-sm">1</span>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-2">Choose Your Model</h4>
+                          <p className="text-gray-600 text-sm">Select from OpenAI, Google Gemini, or your custom model</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start space-x-4">
+                        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-white font-bold text-sm">2</span>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-2">Configure API Keys</h4>
+                          <p className="text-gray-600 text-sm">Add your model-specific API keys to the dashboard</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start space-x-4">
+                        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-white font-bold text-sm">3</span>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-2">Start Generating</h4>
+                          <p className="text-gray-600 text-sm">Use the unified API to generate prompts with any model</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -340,25 +590,25 @@ export default function Docs() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white border-t border-gray-200">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="glass p-12 rounded-3xl border border-white/10">
-            <h2 className="text-3xl font-bold mb-6 gradient-text-primary">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-12 rounded-3xl border border-blue-200">
+            <h2 className="text-3xl font-bold mb-6 text-gray-900">
               Ready to Get Started?
             </h2>
-            <p className="text-xl text-white/70 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
               Join thousands of developers who are already using Promptly to create better AI prompts.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
                 href="/dashboard"
-                className="bg-gradient-to-r from-[#0ea5e9] to-[#06b6d4] hover:from-[#0284c7] hover:to-[#0891b2] text-black px-8 py-4 rounded-full font-semibold text-lg transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-[#0ea5e9]/25 glow-primary"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-full font-semibold text-lg transition-colors hover:shadow-lg"
               >
                 Start Building
               </a>
               <a
                 href="/pricing"
-                className="bg-white/10 hover:bg-white/20 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all duration-200 border border-white/20"
+                className="bg-white hover:bg-gray-50 text-gray-900 px-8 py-4 rounded-full font-semibold text-lg transition-colors border border-gray-300"
               >
                 View Pricing
               </a>
@@ -366,8 +616,6 @@ export default function Docs() {
           </div>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 }
