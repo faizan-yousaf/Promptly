@@ -38,10 +38,10 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage = 'home' }) => {
         <div className="flex justify-between items-center h-16 lg:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 group">
-            <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-r from-[#0ea5e9] to-[#06b6d4] rounded-lg flex items-center justify-center glow-primary">
               <span className="text-black font-bold text-sm">P</span>
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent group-hover:scale-105 transition-transform">
+            <span className="text-2xl font-bold gradient-text-primary group-hover:scale-105 transition-transform glow-text-primary">
               Promptly
             </span>
           </Link>
@@ -54,13 +54,13 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage = 'home' }) => {
                 href={item.href}
                 className={`relative px-3 py-2 text-sm font-medium transition-all duration-200 ${
                   item.current
-                    ? 'text-cyan-400'
-                    : 'text-white/80 hover:text-cyan-400'
+                    ? 'text-[#0ea5e9] glow-text-primary'
+                    : 'text-white/80 hover:text-[#0ea5e9] hover:glow-text-primary'
                 }`}
               >
                 {item.label}
                 {item.current && (
-                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full" />
+                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-[#0ea5e9] to-[#06b6d4] rounded-full glow-primary" />
                 )}
               </Link>
             ))}
@@ -68,12 +68,12 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage = 'home' }) => {
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center space-x-4">
-            <button className="p-2 text-white/60 hover:text-cyan-400 transition-colors">
+                          <button className="p-2 text-white/60 hover:text-[#0ea5e9] hover:glow-text-primary transition-colors">
               <Search className="w-5 h-5" />
             </button>
             <Link
               href="/dashboard"
-              className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-black px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-cyan-400/25"
+              className="bg-gradient-to-r from-[#0ea5e9] to-[#06b6d4] hover:from-[#0284c7] hover:to-[#0891b2] text-black px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-[#0ea5e9]/25 glow-primary"
             >
               Get Started
             </Link>

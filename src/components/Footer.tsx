@@ -47,10 +47,10 @@ const Footer: React.FC = () => {
           {/* Brand Section */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-[#0ea5e9] to-[#06b6d4] rounded-lg flex items-center justify-center glow-primary">
                 <span className="text-black font-bold text-sm">P</span>
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+              <span className="text-2xl font-bold gradient-text-primary glow-text-primary">
                 Promptly
               </span>
             </Link>
@@ -65,7 +65,7 @@ const Footer: React.FC = () => {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-lg flex items-center justify-center text-white/60 hover:text-cyan-400 transition-all duration-200"
+                  className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-lg flex items-center justify-center text-white/60 hover:text-[#0ea5e9] hover:glow-text-primary transition-all duration-200"
                 >
                   <social.icon className="w-5 h-5" />
                 </a>
@@ -81,7 +81,7 @@ const Footer: React.FC = () => {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-white/60 hover:text-cyan-400 transition-colors text-sm"
+                    className="text-white/60 hover:text-[#0ea5e9] hover:glow-text-primary transition-colors text-sm"
                   >
                     {link.name}
                   </Link>
@@ -98,7 +98,7 @@ const Footer: React.FC = () => {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-white/60 hover:text-cyan-400 transition-colors text-sm"
+                    className="text-white/60 hover:text-[#0ea5e9] hover:glow-text-primary transition-colors text-sm"
                   >
                     {link.name}
                   </Link>
@@ -115,7 +115,7 @@ const Footer: React.FC = () => {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-white/60 hover:text-cyan-400 transition-colors text-sm"
+                    className="text-white/60 hover:text-[#0ea5e9] hover:glow-text-primary transition-colors text-sm"
                   >
                     {link.name}
                   </Link>
@@ -132,7 +132,7 @@ const Footer: React.FC = () => {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-white/60 hover:text-cyan-400 transition-colors text-sm"
+                    className="text-white/60 hover:text-[#0ea5e9] hover:glow-text-primary transition-colors text-sm"
                   >
                     {link.name}
                   </Link>

@@ -140,43 +140,36 @@ export default function Home() {
 
       {/* Content Sections */}
       <div>
-        {/* Features Section */}
-        <ScrollReveal delay={0.2} y={60}>
-          <Suspense fallback={<SectionSkeleton />}>
-            <FeaturesSection />
-          </Suspense>
-        </ScrollReveal>
-
         {/* How It Works Section */}
-        <ScrollReveal delay={0.3} y={80}>
+        <ScrollReveal delay={0.2} y={60}>
           <Suspense fallback={<SectionSkeleton />}>
             <HowItWorksSection visibleElements={visibleElements} />
           </Suspense>
         </ScrollReveal>
 
         {/* Agent Mode Section */}
-        <ScrollReveal delay={0.4} y={100}>
+        <ScrollReveal delay={0.3} y={80}>
           <Suspense fallback={<SectionSkeleton />}>
             <AgentModeSection visibleElements={visibleElements} />
           </Suspense>
         </ScrollReveal>
 
         {/* Multilingual Section */}
-        <ScrollReveal delay={0.5} y={120}>
+        <ScrollReveal delay={0.4} y={100}>
           <Suspense fallback={<SectionSkeleton />}>
             <MultilingualSection visibleElements={visibleElements} />
           </Suspense>
         </ScrollReveal>
 
         {/* ScrollStack Section */}
-        <ScrollReveal delay={0.6} y={150}>
+        <ScrollReveal delay={0.5} y={120}>
           <Suspense fallback={<SectionSkeleton />}>
             <ScrollStackSection />
           </Suspense>
         </ScrollReveal>
 
         {/* Scroll Float Effect */}
-        <ScrollReveal delay={0.7} y={180}>
+        <ScrollReveal delay={0.6} y={150}>
           <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: '#000000'}}>
             <ScrollFloat
                animationDuration={1}
@@ -193,7 +186,7 @@ export default function Home() {
         </ScrollReveal>
 
         {/* CTA Section */}
-        <ScrollReveal delay={0.8} y={80}>
+        <ScrollReveal delay={0.7} y={80}>
           <Suspense fallback={<SectionSkeleton />}>
             <CTASection visibleElements={visibleElements} />
           </Suspense>
