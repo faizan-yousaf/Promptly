@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import DeveloperProfile from '@/components/DeveloperProfile';
 import { Github, Twitter, Linkedin, Mail, Globe, Code, Zap, Users } from 'lucide-react';
 
 export default function About() {
@@ -80,7 +81,7 @@ export default function About() {
             {[
               { id: 'story', label: 'Our Story' },
               { id: 'mission', label: 'Mission' },
-              { id: 'team', label: 'Team' },
+              { id: 'team', label: 'Developer' },
               { id: 'values', label: 'Values' },
             ].map((tab) => (
               <button
@@ -154,29 +155,32 @@ export default function About() {
               <div className="space-y-8">
                 <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10">
                   <h3 className="text-2xl font-bold mb-6 bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                    Meet the Team
+                    Meet the Developer
                   </h3>
-                  <div className="grid md:grid-cols-2 gap-8">
-                    <div className="text-center">
-                      <div className="w-32 h-32 mx-auto mb-4 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full flex items-center justify-center">
-                        <span className="text-4xl font-bold text-black">A</span>
-                      </div>
-                      <h4 className="text-xl font-semibold mb-2">Alex Chen</h4>
-                      <p className="text-cyan-400 mb-3">Founder & CEO</p>
-                      <p className="text-white/70 text-sm">
-                        Former AI researcher at Google, passionate about making AI accessible to everyone.
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <div className="w-32 h-32 mx-auto mb-4 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center">
-                        <span className="text-4xl font-bold text-black">S</span>
-                      </div>
-                      <h4 className="text-xl font-semibold mb-2">Sarah Kim</h4>
-                      <p className="text-purple-400 mb-3">CTO</p>
-                      <p className="text-white/70 text-sm">
-                        Full-stack engineer with 8+ years building scalable applications and AI systems.
-                      </p>
-                    </div>
+                  <div className="max-w-2xl mx-auto">
+                    <DeveloperProfile
+                      name="Your Name"
+                      role="Full Stack Developer & AI Engineer"
+                      avatar=""
+                      bio="Passionate developer with expertise in modern web technologies, AI/ML, and building scalable applications. Focused on creating innovative solutions that bridge the gap between human creativity and artificial intelligence."
+                      skills={[
+                        'React/Next.js',
+                        'TypeScript',
+                        'Node.js',
+                        'Python',
+                        'AI/ML',
+                        'Supabase',
+                        'Tailwind CSS',
+                        'Git'
+                      ]}
+                      socialLinks={{
+                        github: 'https://github.com/yourusername',
+                        twitter: 'https://twitter.com/yourusername',
+                        linkedin: 'https://linkedin.com/in/yourusername',
+                        email: 'hello@yourdomain.com',
+                        website: 'https://yourdomain.com'
+                      }}
+                    />
                   </div>
                 </div>
               </div>
