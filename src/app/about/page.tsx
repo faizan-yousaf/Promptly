@@ -26,10 +26,11 @@ export default function About() {
   ];
 
   const socialLinks = [
-    { name: 'GitHub', href: 'https://github.com', icon: Github, color: 'hover:text-gray-400' },
-    { name: 'Twitter', href: 'https://twitter.com', icon: Twitter, color: 'hover:text-blue-400' },
-    { name: 'LinkedIn', href: 'https://linkedin.com', icon: Linkedin, color: 'hover:text-blue-600' },
-    { name: 'Email', href: 'mailto:hello@promptly.ai', icon: Mail, color: 'hover:text-red-400' },
+    { name: 'GitHub', href: 'https://github.com/faizan-yousaf', icon: Github, color: 'hover:text-gray-400' },
+    { name: 'Twitter', href: 'https://x.com/faizany26996790', icon: Twitter, color: 'hover:text-blue-400' },
+    { name: 'LinkedIn', href: 'https://www.linkedin.com/in/mrfaizanyousaf', icon: Linkedin, color: 'hover:text-blue-600' },
+    { name: 'Email', href: 'mailto:faizanyousaf815@gmail.com', icon: Mail, color: 'hover:text-red-400' },
+    { name: 'Kaggle', href: 'https://kaggle.com/faizanyousafonly', icon: Globe, color: 'hover:text-cyan-400' },
   ];
 
   return (
@@ -158,29 +159,7 @@ export default function About() {
                     Meet the Developer
                   </h3>
                   <div className="max-w-2xl mx-auto">
-                    <DeveloperProfile
-                      name="Your Name"
-                      role="Full Stack Developer & AI Engineer"
-                      avatar=""
-                      bio="Passionate developer with expertise in modern web technologies, AI/ML, and building scalable applications. Focused on creating innovative solutions that bridge the gap between human creativity and artificial intelligence."
-                      skills={[
-                        'React/Next.js',
-                        'TypeScript',
-                        'Node.js',
-                        'Python',
-                        'AI/ML',
-                        'Supabase',
-                        'Tailwind CSS',
-                        'Git'
-                      ]}
-                      socialLinks={{
-                        github: 'https://github.com/yourusername',
-                        twitter: 'https://twitter.com/yourusername',
-                        linkedin: 'https://linkedin.com/in/yourusername',
-                        email: 'hello@yourdomain.com',
-                        website: 'https://yourdomain.com'
-                      }}
-                    />
+                    <DeveloperProfile />
                   </div>
                 </div>
               </div>

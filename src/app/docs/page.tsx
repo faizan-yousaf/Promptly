@@ -283,7 +283,7 @@ print(response.prompt)`,
                       <ArrowRight className="w-4 h-4 mr-2" />
                       View Pricing
                     </a>
-                    <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="flex items-center text-sm text-white/60 hover:text-cyan-400 transition-colors">
+                    <a href="https://github.com/faizan-yousaf" target="_blank" rel="noopener noreferrer" className="flex items-center text-sm text-white/60 hover:text-cyan-400 transition-colors">
                       <Github className="w-4 h-4 mr-2" />
                       GitHub
                     </a>

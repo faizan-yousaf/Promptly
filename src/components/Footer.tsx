@@ -34,10 +34,10 @@ const Footer: React.FC = () => {
   };
 
   const socialLinks = [
-    { name: 'GitHub', href: 'https://github.com', icon: Github },
-    { name: 'Twitter', href: 'https://twitter.com', icon: Twitter },
-    { name: 'LinkedIn', href: 'https://linkedin.com', icon: Linkedin },
-    { name: 'Email', href: 'mailto:hello@promptly.ai', icon: Mail },
+    { name: 'GitHub', href: 'https://github.com/faizan-yousaf', icon: Github },
+    { name: 'Twitter', href: 'https://x.com/faizany26996790', icon: Twitter },
+    { name: 'LinkedIn', href: 'https://www.linkedin.com/in/mrfaizanyousaf', icon: Linkedin },
+    { name: 'Email', href: 'mailto:faizanyousaf815@gmail.com', icon: Mail },
   ];
 
   return (
