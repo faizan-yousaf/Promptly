@@ -74,7 +74,8 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage = 'home' }) => {
               <Search className="w-5 h-5" />
             </button>
             
-            {isLoaded && (
+            {/* Show authentication buttons even while loading */}
+            {isLoaded ? (
               <>
                 {isSignedIn ? (
                   <div className="flex items-center space-x-4">
@@ -109,6 +110,22 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage = 'home' }) => {
                   </div>
                 )}
               </>
+            ) : (
+              // Show default buttons while loading
+              <div className="flex items-center space-x-4">
+                <Link
+                  href="/sign-in"
+                  className="text-white/80 hover:text-[#0ea5e9] hover:glow-text-primary transition-colors px-4 py-2"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/sign-up"
+                  className="bg-gradient-to-r from-[#0ea5e9] to-[#06b6d4] hover:from-[#0284c7] hover:to-[#0891b2] text-black px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-[#0ea5e9]/25 glow-primary"
+                >
+                  Get Started
+                </Link>
+              </div>
             )}
           </div>
 
@@ -140,7 +157,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage = 'home' }) => {
                 </Link>
               ))}
               <div className="pt-4 border-t border-white/10">
-                {isLoaded && (
+                {isLoaded ? (
                   <>
                     {isSignedIn ? (
                       <div className="space-y-2">
@@ -177,6 +194,24 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage = 'home' }) => {
                       </div>
                     )}
                   </>
+                ) : (
+                  // Show default buttons while loading
+                  <div className="space-y-2">
+                    <Link
+                      href="/sign-in"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block w-full text-gray-400 hover:text-white px-4 py-2 text-center transition-colors"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      href="/sign-up"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black px-4 py-3 rounded-lg font-semibold text-center transition-all duration-200 hover:scale-105"
+                    >
+                      Get Started
+                    </Link>
+                  </div>
                 )}
               </div>
             </div>

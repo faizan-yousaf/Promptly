@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generatePromptResponse, PromptRequest } from '@/lib/ai';
-import { PromptOptimizer, OptimizationStrategy } from '@/lib/prompt-optimizer';
-import { auth } from '@clerk/nextjs/server';
+import { generatePromptResponse, PromptRequest, getModelStatus } from '@/lib/ai';
+import { PromptOptimizer } from '@/lib/prompt-optimizer';
+// import { auth } from '@clerk/nextjs/server'; // Temporarily disabled for testing
 
 // Rate limiting storage (in production, use Redis or a proper rate limiter)
 const requestTracker = new Map<string, { count: number; resetTime: number }>();
@@ -35,6 +35,8 @@ function sanitizeInput(input: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('API Route called - Starting request processing');
+    
     // Check authentication (temporarily disabled for testing)
     // const { userId } = auth();
     // if (!userId) {
@@ -96,7 +98,7 @@ export async function POST(request: NextRequest) {
     // Validate allowed values
     const allowedModels = ['gemini', 'groq', 'openrouter'];
     const allowedTones = ['professional', 'friendly', 'creative'];
-    const allowedRoles = ['developer', 'marketer', 'founder', 'freelancer', 'legal'];
+    const allowedRoles = ['developer', 'marketer', 'writer', 'researcher', 'entrepreneur', 'student'];
     
     if (!allowedModels.includes(model) || !allowedTones.includes(tone) || !allowedRoles.includes(role)) {
       return NextResponse.json(
@@ -131,7 +133,21 @@ export async function POST(request: NextRequest) {
       openRouterModel
     };
     
+    console.log('API Key check:', {
+      OPENROUTER_API_KEY: !!process.env.OPENROUTER_API_KEY,
+      OpenAI_Key: !!process.env.OpenAI_Key,
+      model: model,
+      openRouterModel: openRouterModel
+    });
+    
+    console.log('Calling generatePromptResponse with:', promptRequest);
     const result = await generatePromptResponse(promptRequest);
+    console.log('generatePromptResponse result:', { 
+      success: true, 
+      model: result.model,
+      fallbackUsed: result.fallbackUsed,
+      fallbackReason: result.fallbackReason
+    });
 
     return NextResponse.json({
       prompt: result.response,
@@ -141,20 +157,45 @@ export async function POST(request: NextRequest) {
       optimization: optimizationMetadata,
       originalInput: sanitizedInput,
       optimizedInput: optimizedInput !== sanitizedInput ? optimizedInput : undefined,
+      fallbackUsed: result.fallbackUsed,
+      fallbackReason: result.fallbackReason,
     });
-  } catch (error) {
-    // Log error securely without exposing sensitive details
-    console.error('API Error:', error instanceof Error ? error.message : 'Unknown error');
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
+      } catch (err) {
+      // Log error securely without exposing sensitive details
+      console.error('API Error:', err instanceof Error ? err.message : 'Unknown error');
+      
+      // Check if it's a configuration error
+      if (err instanceof Error && err.message.includes('No AI models are configured')) {
+        const modelStatus = getModelStatus();
+        return NextResponse.json(
+          { 
+            error: 'No AI models are configured. Please check your API keys.',
+            modelStatus 
+          },
+          { status: 503 }
+        );
+      }
+      
+      return NextResponse.json(
+        { error: 'Internal server error' },
+        { status: 500 }
+      );
+    }
 }
 
 export async function GET() {
-  return NextResponse.json(
-    { message: 'This endpoint only accepts POST requests' },
-    { status: 405 }
-  );
+  try {
+    // Return model status for debugging
+    const modelStatus = getModelStatus();
+    return NextResponse.json({
+      message: 'Promptly AI API is running',
+      modelStatus,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Failed to get model status' },
+      { status: 500 }
+    );
+  }
 }

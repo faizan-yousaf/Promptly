@@ -78,6 +78,14 @@ export class OpenRouterClient {
   }) {
     const startTime = Date.now();
     
+    console.log('OpenRouter generateCompletion called with:', {
+      model,
+      temperature,
+      maxTokens,
+      hasSystemPrompt: !!systemPrompt,
+      promptLength: prompt.length
+    });
+    
     try {
       const headers: Record<string, string> = {
         'Authorization': `Bearer ${this.apiKey}`,
@@ -131,7 +139,13 @@ export class OpenRouterClient {
       };
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error('OpenRouter API error:', error.response?.data || error.message);
+        console.error('OpenRouter API error:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          message: error.message,
+          url: error.config?.url
+        });
         throw new OpenRouterError(
           'Failed to generate response with OpenRouter',
           error.response?.status,

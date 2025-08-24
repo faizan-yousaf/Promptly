@@ -1,22 +1,37 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import Groq from 'groq-sdk'
 import { OpenRouterClient } from './openrouter'
+import { env, validateEnv } from './env'
+
+// Validate environment variables on module load
+validateEnv();
 
 // Initialize AI clients (only if API keys are available)
-const gemini = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
-const groq = process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_KEY }) : null;
+const gemini = env.GEMINI_API_KEY ? new GoogleGenerativeAI(env.GEMINI_API_KEY) : null;
+const groq = env.GROQ_API_KEY ? new Groq({ apiKey: env.GROQ_API_KEY }) : null;
 
 // Initialize OpenRouter client (only if API key is available)
-const openRouter = process.env.OPENROUTER_API_KEY ? new OpenRouterClient({
-  apiKey: process.env.OPENROUTER_API_KEY,
-  siteUrl: process.env.SITE_URL || 'http://localhost:3000',
+const hasOpenRouterKey = !!env.OPENROUTER_API_KEY;
+console.log('OpenRouter initialization:', {
+  hasKey: hasOpenRouterKey,
+  OPENROUTER_API_KEY: !!env.OPENROUTER_API_KEY,
+  OPENROUTER_API_KEY_Length: env.OPENROUTER_API_KEY ? env.OPENROUTER_API_KEY.length : 0,
+  // Debug: Show actual values (first 10 chars)
+  OPENROUTER_API_KEY_Preview: env.OPENROUTER_API_KEY ? `${env.OPENROUTER_API_KEY.substring(0, 10)}...` : 'Not set',
+  GEMINI_API_KEY_Preview: env.GEMINI_API_KEY ? `${env.GEMINI_API_KEY.substring(0, 10)}...` : 'Not set',
+  GROQ_API_KEY_Preview: env.GROQ_API_KEY ? `${env.GROQ_API_KEY.substring(0, 10)}...` : 'Not set'
+});
+
+const openRouter = hasOpenRouterKey ? new OpenRouterClient({
+  apiKey: env.OPENROUTER_API_KEY || '',
+  siteUrl: env.SITE_URL,
   siteName: 'Promptly',
-  defaultModel: process.env.OPENROUTER_DEFAULT_MODEL || 'openai/gpt-4o',
+  defaultModel: env.OPENROUTER_DEFAULT_MODEL,
 }) : null;
 
 export type AIModel = 'gemini' | 'groq' | 'openrouter'
 export type ToneType = 'professional' | 'friendly' | 'creative'
-export type RoleType = 'developer' | 'marketer' | 'founder' | 'freelancer' | 'legal'
+export type RoleType = 'developer' | 'marketer' | 'writer' | 'researcher' | 'entrepreneur' | 'student'
 
 export interface PromptRequest {
   prompt: string
@@ -38,6 +53,8 @@ export interface PromptResponse {
     completion_tokens?: number
     total_tokens?: number
   }
+  fallbackUsed?: boolean
+  fallbackReason?: string
 }
 
 // Tone modifiers
@@ -51,9 +68,10 @@ const toneModifiers = {
 const roleContexts = {
   developer: 'You are assisting a software developer. Focus on technical accuracy, code examples, and development best practices.',
   marketer: 'You are assisting a marketing professional. Focus on audience engagement, conversion optimization, and brand messaging.',
-  founder: 'You are assisting a startup founder. Focus on strategic thinking, business growth, and leadership insights.',
-  freelancer: 'You are assisting a freelancer. Focus on client communication, project management, and professional services.',
-  legal: 'You are assisting with legal matters. Focus on accuracy, compliance, and professional legal language. Note: This is not legal advice.'
+  writer: 'You are assisting a content writer. Focus on creative writing, content strategy, and engaging storytelling.',
+  researcher: 'You are assisting a researcher. Focus on analytical thinking, data interpretation, and thorough investigation.',
+  entrepreneur: 'You are assisting an entrepreneur. Focus on strategic thinking, business growth, and leadership insights.',
+  student: 'You are assisting a student. Focus on learning, education, and academic development.'
 }
 
 // Language instructions
@@ -66,7 +84,7 @@ const languageInstructions = {
   pt: 'Responda em português.',
   zh: '用中文回答。',
   ja: '日本語で回答してください。',
-  ko: '한국어로 답변해주세요.',
+  ko: '한국어로 답변해주세요。',
   hi: 'हिंदी में जवाब दें।',
   ar: 'الرجاء الرد باللغة العربية.',
   ru: 'Ответьте на русском языке.'
@@ -177,7 +195,13 @@ export async function callGroq(request: PromptRequest): Promise<PromptResponse> 
 
 // OpenRouter API call
 export async function callOpenRouter(request: PromptRequest): Promise<PromptResponse> {
+  console.log('callOpenRouter called with:', { model: request.model, openRouterModel: request.openRouterModel });
+  
   if (!openRouter) {
+    console.error('OpenRouter client not initialized. API keys available:', {
+      OPENROUTER_API_KEY: !!process.env.OPENROUTER_API_KEY,
+      OpenAI_Key: !!process.env.OpenAI_Key
+    });
     throw new Error('OpenRouter API key not configured');
   }
   
@@ -247,16 +271,134 @@ function extractAgentSteps(response: string): string[] {
   return steps.length > 0 ? steps : ['Analysis completed', 'Response generated']
 }
 
-// Main AI function
+// Get available models based on configured API keys
+export function getAvailableModels(): AIModel[] {
+  const available: AIModel[] = []
+  
+  if (gemini) available.push('gemini')
+  if (groq) available.push('groq')
+  if (openRouter) available.push('openrouter')
+  
+  return available
+}
+
+// Enhanced AI function with fallback
 export async function generatePromptResponse(request: PromptRequest): Promise<PromptResponse> {
-  switch (request.model) {
-    case 'gemini':
-      return await callGemini(request)
-    case 'groq':
-      return await callGroq(request)
-    case 'openrouter':
-      return await callOpenRouter(request)
-    default:
-      throw new Error(`Unsupported model: ${request.model}`)
+  const availableModels = getAvailableModels()
+  
+  if (availableModels.length === 0) {
+    throw new Error('No AI models are configured. Please check your API keys.')
+  }
+  
+  // If the requested model is available, try it first
+  if (availableModels.includes(request.model)) {
+    try {
+      switch (request.model) {
+        case 'gemini':
+          return await callGemini(request)
+        case 'groq':
+          return await callGroq(request)
+        case 'openrouter':
+          return await callOpenRouter(request)
+        default:
+          throw new Error(`Unsupported model: ${request.model}`)
+      }
+    } catch (error) {
+      console.warn(`Primary model ${request.model} failed, trying fallback...`, error)
+      
+      // Try other available models as fallback
+      for (const fallbackModel of availableModels) {
+        if (fallbackModel === request.model) continue
+        
+        try {
+          console.log(`Trying fallback model: ${fallbackModel}`)
+          
+          const fallbackRequest = { ...request, model: fallbackModel }
+          let result: PromptResponse
+          
+          switch (fallbackModel) {
+            case 'gemini':
+              result = await callGemini(fallbackRequest)
+              break
+            case 'groq':
+              result = await callGroq(fallbackRequest)
+              break
+            case 'openrouter':
+              result = await callOpenRouter(fallbackRequest)
+              break
+            default:
+              continue
+          }
+          
+          // Mark as fallback response
+          result.fallbackUsed = true
+          result.fallbackReason = `Primary model ${request.model} failed, used ${fallbackModel} as fallback`
+          
+          console.log(`Fallback successful with ${fallbackModel}`)
+          return result
+          
+        } catch (fallbackError) {
+          console.warn(`Fallback model ${fallbackModel} also failed:`, fallbackError)
+          continue
+        }
+      }
+      
+      // If all models fail, throw the original error
+      throw error
+    }
+  } else {
+    // Requested model not available, try any available model
+    for (const model of availableModels) {
+      try {
+        console.log(`Requested model ${request.model} not available, trying ${model}`)
+        
+        const fallbackRequest = { ...request, model }
+        let result: PromptResponse
+        
+        switch (model) {
+          case 'gemini':
+            result = await callGemini(fallbackRequest)
+            break
+          case 'groq':
+            result = await callGroq(fallbackRequest)
+            break
+          case 'openrouter':
+            result = await callOpenRouter(fallbackRequest)
+            break
+          default:
+            continue
+        }
+        
+        // Mark as fallback response
+        result.fallbackUsed = true
+        result.fallbackReason = `Requested model ${request.model} not available, used ${model} instead`
+        
+        console.log(`Successfully used ${model} as alternative`)
+        return result
+        
+      } catch (error) {
+        console.warn(`Model ${model} failed:`, error)
+        continue
+      }
+    }
+    
+    throw new Error(`All available models failed. Available models: ${availableModels.join(', ')}`)
+  }
+}
+
+// Get model status for debugging
+export function getModelStatus() {
+  return {
+    gemini: !!gemini,
+    groq: !!groq,
+    openrouter: !!openRouter,
+    availableModels: getAvailableModels(),
+    hasOpenRouterKey,
+    envVars: {
+      GEMINI_API_KEY: !!process.env.GEMINI_API_KEY,
+      GROQ_API_KEY: !!process.env.GROQ_API_KEY,
+      OPENROUTER_API_KEY: !!process.env.OPENROUTER_API_KEY,
+      OpenAI_Key: !!process.env.OpenAI_Key,
+    }
   }
 }

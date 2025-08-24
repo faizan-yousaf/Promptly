@@ -25,7 +25,10 @@ import {
   Menu,
   X,
   Share2,
-  MoreVertical
+  MoreVertical,
+  Mic,
+  MicOff,
+  Volume2
 } from 'lucide-react';
 
 type Role = 'developer' | 'marketer' | 'writer' | 'researcher' | 'entrepreneur' | 'student';
@@ -63,6 +66,12 @@ export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   
+  // Voice input states
+  const [isListening, setIsListening] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const [recognition, setRecognition] = useState<any>(null);
+  
   // Configuration states
   const [selectedRole, setSelectedRole] = useState<Role>('developer');
   const [outputFormat, setOutputFormat] = useState<OutputFormat>('text');
@@ -78,6 +87,59 @@ export default function Dashboard() {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const roleDropdownRef = useRef<HTMLDivElement>(null);
+  const formatDropdownRef = useRef<HTMLDivElement>(null);
+  const lengthDropdownRef = useRef<HTMLDivElement>(null);
+  const tuningDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+      const recognitionInstance = new SpeechRecognition();
+      
+      recognitionInstance.continuous = true;
+      recognitionInstance.interimResults = true;
+      recognitionInstance.lang = 'en-US';
+      
+      recognitionInstance.onstart = () => {
+        setIsRecording(true);
+        setTranscript('');
+      };
+      
+      recognitionInstance.onresult = (event: any) => {
+        let finalTranscript = '';
+        let interimTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+        
+        setTranscript(finalTranscript + interimTranscript);
+      };
+      
+      recognitionInstance.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        setIsRecording(false);
+        setIsListening(false);
+      };
+      
+      recognitionInstance.onend = () => {
+        setIsRecording(false);
+        if (isListening) {
+          // Restart if still listening
+          recognitionInstance.start();
+        }
+      };
+      
+      setRecognition(recognitionInstance);
+    }
+  }, [isListening]);
 
   // Check authentication
   useEffect(() => {
@@ -94,11 +156,19 @@ export default function Dashboard() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (!target.closest('.dropdown-container')) {
+      
+      // Check if click is outside all dropdown containers
+      const isOutsideDropdowns = !target.closest('.dropdown-container');
+      const isOutsideChatMenu = !target.closest('[data-chat-menu]');
+      
+      if (isOutsideDropdowns) {
         setShowRoleSelector(false);
         setShowFormatSelector(false);
         setShowLengthSelector(false);
         setShowTuningSelector(false);
+      }
+      
+      if (isOutsideChatMenu) {
         setShowChatMenu(false);
       }
     };
@@ -109,6 +179,33 @@ export default function Dashboard() {
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Voice input functions
+  const startListening = () => {
+    if (recognition && !isRecording) {
+      setIsListening(true);
+      recognition.start();
+    }
+  };
+
+  const stopListening = () => {
+    if (recognition) {
+      setIsListening(false);
+      recognition.stop();
+      if (transcript.trim()) {
+        setInputValue(transcript.trim());
+        setTranscript('');
+      }
+    }
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
   };
 
   // Show loading state while checking authentication
@@ -203,7 +300,13 @@ export default function Dashboard() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate response');
+        const errorText = await response.text();
+        console.error('API Response Error:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText
+        });
+        throw new Error(`Failed to generate response: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -225,9 +328,10 @@ export default function Dashboard() {
       setChatSessions(prev => prev.map(s => s.id === session!.id ? finalSession : s));
     } catch (error) {
       console.error('Error generating response:', error);
+      const errorContent = error instanceof Error ? error.message : 'Unknown error occurred';
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        content: 'Sorry, I encountered an error generating a response. Please try again.',
+        content: `Sorry, I encountered an error generating a response: ${errorContent}. Please check your API keys and try again.`,
         isUser: false,
         timestamp: new Date(),
       };
@@ -451,7 +555,7 @@ export default function Dashboard() {
               </div>
               {currentSession && (
                 <div className="flex items-center space-x-2">
-                  <div className="relative dropdown-container">
+                  <div className="relative" data-chat-menu>
                     <button
                       onClick={() => setShowChatMenu(!showChatMenu)}
                       className="p-2 hover:bg-white/10 rounded-lg transition-colors"
@@ -504,33 +608,33 @@ export default function Dashboard() {
           {/* Messages */}
           <div className={`flex-1 overflow-y-auto p-4 space-y-6 ${currentSession?.messages.length === 0 ? 'flex items-center justify-center' : ''}`}>
             {currentSession?.messages.length === 0 ? (
-                              <div className="text-center max-w-md">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-cyan-400/20 to-blue-500/20 rounded-full flex items-center justify-center">
-                    <Bot className="w-8 h-8 text-cyan-400" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2 text-white">Welcome to Promptly</h3>
-                  <p className="text-white/60 mb-6">
-                    Start a conversation by typing your message below. I'll help you create perfect prompts for any task.
-                  </p>
-                  
-                  {/* Quick Start Suggestions */}
-                  <div className="grid grid-cols-1 gap-3">
-                    {[
-                      "Write a professional email to a client",
-                      "Create a marketing campaign for a new product",
-                      "Generate code documentation for a function",
-                      "Write a blog post about AI trends"
-                    ].map((suggestion, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setInputValue(suggestion)}
-                        className="p-3 text-left bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 transition-colors text-sm text-white/80"
-                      >
-                        {suggestion}
-                      </button>
-                    ))}
-                  </div>
+              <div className="text-center max-w-md">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-cyan-400/20 to-blue-500/20 rounded-full flex items-center justify-center">
+                  <Bot className="w-8 h-8 text-cyan-400" />
                 </div>
+                <h3 className="text-xl font-semibold mb-2 text-white">Welcome to Promptly</h3>
+                <p className="text-white/60 mb-6">
+                  Start a conversation by typing your message below. I'll help you create perfect prompts for any task.
+                </p>
+                
+                {/* Quick Start Suggestions */}
+                <div className="grid grid-cols-1 gap-3">
+                  {[
+                    "Write a professional email to a client",
+                    "Create a marketing campaign for a new product",
+                    "Generate code documentation for a function",
+                    "Write a blog post about AI trends"
+                  ].map((suggestion, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setInputValue(suggestion)}
+                      className="p-3 text-left bg-white/5 hover:bg-white/10 rounded-lg border border-white/10 transition-colors text-sm text-white/80"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ) : (
               <>
                 {currentSession?.messages.map((message) => (
@@ -550,13 +654,13 @@ export default function Dashboard() {
                           <Bot className="w-4 h-4 text-white" />
                         )}
                       </div>
-                                          <div className={`rounded-2xl px-4 py-3 max-w-2xl ${
-                      message.isUser
-                        ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-black'
-                        : 'bg-white/10 backdrop-blur-sm border border-white/10 text-white'
-                    }`}>
-                      <div className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</div>
-                    </div>
+                      <div className={`rounded-2xl px-4 py-3 max-w-2xl ${
+                        message.isUser
+                          ? 'bg-gray-600 text-white'
+                          : 'bg-gray-600 text-white'
+                      }`}>
+                        <div className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -566,13 +670,13 @@ export default function Dashboard() {
                       <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center">
                         <Bot className="w-4 h-4 text-white" />
                       </div>
-                                        <div className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl px-4 py-3">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                    </div>
-                  </div>
+                      <div className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl px-4 py-3">
+                        <div className="flex space-x-1">
+                          <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                          <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -594,11 +698,29 @@ export default function Dashboard() {
                 return (
                   <div key={config.type} className="relative flex-shrink-0 dropdown-container">
                     <button
-                      onClick={() => {
-                        setShowRoleSelector(config.type === 'role' ? !showRoleSelector : false);
-                        setShowFormatSelector(config.type === 'format' ? !showFormatSelector : false);
-                        setShowLengthSelector(config.type === 'length' ? !showLengthSelector : false);
-                        setShowTuningSelector(config.type === 'tuning' ? !showTuningSelector : false);
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Close all other dropdowns first
+                        setShowRoleSelector(false);
+                        setShowFormatSelector(false);
+                        setShowLengthSelector(false);
+                        setShowTuningSelector(false);
+                        
+                        // Toggle the clicked dropdown
+                        switch (config.type) {
+                          case 'role':
+                            setShowRoleSelector(!showRoleSelector);
+                            break;
+                          case 'format':
+                            setShowFormatSelector(!showFormatSelector);
+                            break;
+                          case 'length':
+                            setShowLengthSelector(!showLengthSelector);
+                            break;
+                          case 'tuning':
+                            setShowTuningSelector(!showTuningSelector);
+                            break;
+                        }
                       }}
                       className="flex items-center space-x-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg border border-white/20 transition-colors text-sm"
                     >
@@ -612,11 +734,12 @@ export default function Dashboard() {
                       (config.type === 'format' && showFormatSelector) ||
                       (config.type === 'length' && showLengthSelector) ||
                       (config.type === 'tuning' && showTuningSelector)) && (
-                      <div className="absolute bottom-full left-0 mb-2 w-64 bg-black/90 backdrop-blur-xl border border-white/20 rounded-lg shadow-lg p-2 z-10">
+                      <div className="absolute top-full left-0 mt-2 w-64 bg-black/90 backdrop-blur-xl border border-white/20 rounded-lg shadow-lg p-2 z-20">
                         {config.type === 'role' && roleOptions.map((option) => (
                           <button
                             key={option.value}
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setSelectedRole(option.value as Role);
                               setShowRoleSelector(false);
                             }}
@@ -632,7 +755,8 @@ export default function Dashboard() {
                         {config.type === 'format' && formatOptions.map((option) => (
                           <button
                             key={option.value}
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setOutputFormat(option.value as OutputFormat);
                               setShowFormatSelector(false);
                             }}
@@ -648,7 +772,8 @@ export default function Dashboard() {
                         {config.type === 'length' && lengthOptions.map((option) => (
                           <button
                             key={option.value}
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setResponseLength(option.value as ResponseLength);
                               setShowLengthSelector(false);
                             }}
@@ -664,7 +789,8 @@ export default function Dashboard() {
                         {config.type === 'tuning' && tuningOptions.map((option) => (
                           <button
                             key={option.value}
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setTuningOption(option.value as TuningOption);
                               setShowTuningSelector(false);
                             }}
@@ -684,6 +810,15 @@ export default function Dashboard() {
               })}
             </div>
 
+            {/* Voice Input Indicator */}
+            {isRecording && (
+              <div className="mb-3 p-3 bg-red-500/20 border border-red-500/30 rounded-lg flex items-center space-x-2">
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                <span className="text-sm text-red-400">Listening...</span>
+                <span className="text-sm text-white/60">{transcript}</span>
+              </div>
+            )}
+
             {/* Input Area */}
             <div className="flex items-end space-x-4">
               <div className="flex-1">
@@ -698,6 +833,25 @@ export default function Dashboard() {
                   style={{ minHeight: '48px', maxHeight: '120px' }}
                 />
               </div>
+              
+              {/* Voice Input Button */}
+              <button
+                onClick={toggleListening}
+                disabled={isGenerating}
+                className={`p-3 rounded-xl transition-all duration-200 ${
+                  isListening 
+                    ? 'bg-red-500 hover:bg-red-600 text-white' 
+                    : 'bg-white/10 hover:bg-white/20 text-white'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                title={isListening ? 'Stop recording' : 'Start voice input'}
+              >
+                {isListening ? (
+                  <MicOff className="w-5 h-5" />
+                ) : (
+                  <Mic className="w-5 h-5" />
+                )}
+              </button>
+              
               <button
                 onClick={handleSendMessage}
                 disabled={!inputValue.trim() || isGenerating}

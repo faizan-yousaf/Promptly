@@ -3,7 +3,6 @@ import React from 'react';
 
 // Lazy load heavy components
 export const HeroSection = lazy(() => import('./HeroSection'));
-export const FeaturesSection = lazy(() => import('./FeaturesSection'));
 export const HowItWorksSection = lazy(() => import('./HowItWorksSection'));
 export const CTASection = lazy(() => import('./CTASection'));
 
